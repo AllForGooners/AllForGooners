@@ -9,11 +9,11 @@ import time
 # Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Initialize clients
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-openai.api_key = OPENAI_API_KEY
+openai.api_key = GEMINI_API_KEY
 
 def scrape_arsenal_news():
     """Scrape news from multiple Arsenal sources"""
@@ -203,7 +203,7 @@ def main():
     print("🚀 Starting Arsenal news scraper...")
     
     # Check if environment variables are set
-    if not all([SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY]):
+    if not all([SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY]):
         print("❌ Missing environment variables!")
         return
     
