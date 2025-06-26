@@ -102,12 +102,8 @@ class AllForGooners {
         console.log('Rendering news:', this.filteredNews);
         if (!gridContainer || !this.filteredNews) return;
 
-        // Set grid columns to 2 if only 1 or 2 cards, else use default
-        if (this.filteredNews.length <= 2) {
-            gridContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        } else {
-            gridContainer.style.gridTemplateColumns = '';
-        }
+         // Remove the dynamic grid column adjustment - let CSS handle it
+        gridContainer.style.gridTemplateColumns = '';
 
         if (this.filteredNews.length === 0) {
             gridContainer.innerHTML = `
