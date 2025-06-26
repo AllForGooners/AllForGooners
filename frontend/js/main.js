@@ -1,6 +1,12 @@
 // All For Gooners - Main JavaScript
-console.log('typeof supabase:', typeof supabase);
-const supabase = supabase.createClient('https://szchuafsdtigbuxezrbu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6Y2h1YWZzZHRpZ2J1eGV6cmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTY3MDYsImV4cCI6MjA2NjUzMjcwNn0.19rFV1D0wv85gWXygef8LMHHD5W0Iu3Tkfmac_pwSyw');
+console.log('Supabase loaded:', typeof window.supabase);
+
+// Create Supabase client - Fixed the circular reference issue
+const supabaseClient = window.supabase.createClient(
+    'https://szchuafsdtigbuxezrbu.supabase.co', 
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6Y2h1YWZzZHRpZ2J1eGV6cmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTY3MDYsImV4cCI6MjA2NjUzMjcwNn0.19rFV1D0wv85gWXygef8LMHHD5W0Iu3Tkfmac_pwSyw'
+);
+
 class AllForGooners {
     constructor() {
         this.transferData = null;
@@ -42,8 +48,8 @@ class AllForGooners {
             // Simulate loading delay for retro feel
             await new Promise(resolve => setTimeout(resolve, 1500));
     
-            // Fetch from Supabase
-            const { data, error } = await supabase
+            // Fetch from Supabase - using the fixed client
+            const { data, error } = await supabaseClient
                 .from('transfer_news')
                 .select('*')
                 .order('published_at', { ascending: false });
@@ -264,9 +270,9 @@ class AllForGooners {
             position: positionFilter?.value || 'all'
         };
 
-        // Filter news from the API data
-        this.filteredNews = Array.isArray(this.transferData.data) ? this.transferData.data.filter(news => {
-            if (!news.title) return false; // Only news, not tweets
+        // Filter news from the API data - Fixed the data structure reference
+        this.filteredNews = Array.isArray(this.transferData) ? this.transferData.filter(news => {
+            if (!news.title && !news.headline) return false; // Only valid news items
             const matchesType = this.currentFilters.transferType === 'all' || 
                               news.rumor_type === this.currentFilters.transferType;
             const matchesStrength = this.currentFilters.rumorStrength === 'all' || 
@@ -312,7 +318,9 @@ class AllForGooners {
         setTimeout(() => {
             notification.style.transform = 'translateX(300px)';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
             }, 300);
         }, 3000);
     }
@@ -418,21 +426,30 @@ class AllForGooners {
 
     // Utility methods for enhanced functionality
     shareNews(newsId) {
-        const news = this.transferData.latest_news.find(r => r.id === newsId);
+        const news = this.transferData.find(r => r.id === newsId);
         if (news && navigator.share) {
             navigator.share({
-                title: news.headline,
-                text: news.summary,
+                title: news.headline || news.title,
+                text: news.summary || news.news_summary,
                 url: window.location.href
             });
-        } else {
+        } else if (news) {
             // Fallback for browsers without Web Share API
-            this.copyToClipboard(`${news.headline}\n\n${news.summary}\n\nSource: ${news.source}`);
+            this.copyToClipboard(`${news.headline || news.title}\n\n${news.summary || news.news_summary}\n\nSource: ${news.source}`);
         }
     }
 
     copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
+            this.showNotification('Link copied to clipboard!');
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
             this.showNotification('Link copied to clipboard!');
         });
     }
@@ -453,7 +470,9 @@ class AllForGooners {
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
         }, 3000);
     }
 }
@@ -469,10 +488,41 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new AllForGooners();
-    
-    // Make app globally available for debugging
-    window.allForGoonersApp = app;
+    // Wait for Supabase to be fully loaded
+    if (typeof window.supabase !== 'undefined') {
+        const app = new AllForGooners();
+        // Make app globally available for debugging
+        window.allForGoonersApp = app;
+    } else {
+        console.error('Supabase not loaded. Please check your internet connection.');
+        // Show error message to user
+        document.body.innerHTML += `
+            <div style="
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #DC143C;
+                color: white;
+                padding: 2rem;
+                border-radius: 8px;
+                text-align: center;
+                z-index: 9999;
+            ">
+                <h3>Connection Error</h3>
+                <p>Unable to load the application. Please check your internet connection and reload the page.</p>
+                <button onclick="location.reload()" style="
+                    background: white;
+                    color: #DC143C;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 4px;
+                    margin-top: 1rem;
+                    cursor: pointer;
+                ">Reload Page</button>
+            </div>
+        `;
+    }
 });
 
 // Service Worker registration for offline functionality (future enhancement)
