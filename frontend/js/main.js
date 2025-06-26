@@ -1,4 +1,5 @@
 // All For Gooners - Main JavaScript
+console.log('typeof supabase:', typeof supabase);
 const supabase = supabase.createClient('https://szchuafsdtigbuxezrbu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6Y2h1YWZzZHRpZ2J1eGV6cmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTY3MDYsImV4cCI6MjA2NjUzMjcwNn0.19rFV1D0wv85gWXygef8LMHHD5W0Iu3Tkfmac_pwSyw');
 class AllForGooners {
     constructor() {
@@ -497,30 +498,3 @@ class PerformanceMonitor {
 }
 
 PerformanceMonitor.trackPageLoad();
-
-async function fetchAndDisplayNews() {
-    const newsGrid = document.querySelector('.grid-container');
-    newsGrid.innerHTML = '<div>Loading...</div>';
-    try {
-        const { data, error } = await supabase
-            .from('transfer_news')
-            .select('*')
-            .order('published_at', { ascending: false });
-
-        if (error) throw error;
-
-        newsGrid.innerHTML = '';
-        const hub = new AllForGooners();
-        data.forEach(item => {
-            let cardHtml = hub.createNewsCard(item);
-            newsGrid.innerHTML += cardHtml;
-        });
-        // Re-apply any card animations/intersection observers
-        if (hub.observeNewsCards) hub.observeNewsCards();
-    } catch (error) {
-        newsGrid.innerHTML = '<div>Error loading news.</div>';
-        console.error(error);
-    }
-}
-
-window.addEventListener('DOMContentLoaded', fetchAndDisplayNews);
