@@ -1,9 +1,9 @@
-// Arsenal Transfer Central - Main JavaScript
-
-class ArsenalTransferHub {
+// All For Gooners - Main JavaScript
+const supabase = supabase.createClient('https://szchuafsdtigbuxezrbu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6Y2h1YWZzZHRpZ2J1eGV6cmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTY3MDYsImV4cCI6MjA2NjUzMjcwNn0.19rFV1D0wv85gWXygef8LMHHD5W0Iu3Tkfmac_pwSyw');
+class AllForGooners {
     constructor() {
         this.transferData = null;
-        this.filteredRumors = null;
+        this.filteredNews = null;
         this.currentFilters = {
             transferType: 'all',
             rumorStrength: 'all',
@@ -16,7 +16,7 @@ class ArsenalTransferHub {
     async init() {
         this.showLoading();
         await this.loadTransferData();
-        this.renderRumors();
+        this.renderNews();
         this.setupEventListeners();
         this.hideLoading();
         this.addPageAnimations();
@@ -40,16 +40,19 @@ class ArsenalTransferHub {
         try {
             // Simulate loading delay for retro feel
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Fetch from backend API
-            const response = await fetch('http://127.0.0.1:5000/api/rumors');
-            if (!response.ok) {
-                throw new Error('Failed to load transfer data');
+    
+            // Fetch from Supabase
+            const { data, error } = await supabase
+                .from('transfer_news')
+                .select('*')
+                .order('published_at', { ascending: false });
+    
+            if (error) {
+                throw error;
             }
-            const apiData = await response.json();
-            this.transferData = apiData;
-            // Use all Arsenal-related items (rumors and tweets)
-            this.filteredRumors = Array.isArray(apiData.data) ? apiData.data : [];
+    
+            this.transferData = data;
+            this.filteredNews = Array.isArray(data) ? data : [];
         } catch (error) {
             console.error('Error loading transfer data:', error);
             this.handleDataLoadError();
@@ -69,7 +72,7 @@ class ArsenalTransferHub {
                     border-radius: 8px;
                     color: var(--arsenal-white);
                 ">
-                    <h3>🚨 Unable to load transfer rumors</h3>
+                    <h3>🚨 Unable to load transfer news</h3>
                     <p>Please check your connection and try again.</p>
                     <button onclick="location.reload()" style="
                         background: var(--arsenal-red);
@@ -85,11 +88,11 @@ class ArsenalTransferHub {
         }
     }
 
-    renderRumors() {
+    renderNews() {
         const gridContainer = document.querySelector('.grid-container');
-        if (!gridContainer || !this.filteredRumors) return;
+        if (!gridContainer || !this.filteredNews) return;
 
-        if (this.filteredRumors.length === 0) {
+        if (this.filteredNews.length === 0) {
             gridContainer.innerHTML = `
                 <div class="no-results" style="
                     grid-column: 1 / -1;
@@ -106,9 +109,9 @@ class ArsenalTransferHub {
 
         // Deduplicate: group by deduplication key (headline/content)
         const deduped = {};
-        this.filteredRumors.forEach(item => {
+        this.filteredNews.forEach(item => {
             let key = '';
-            if (item.type === 'rumor') {
+            if (item.type === 'news') {
                 key = (item.title || '').trim().toLowerCase();
             } else if (item.type === 'tweet') {
                 key = (item.content || '').slice(0, 80).trim().toLowerCase();
@@ -121,56 +124,46 @@ class ArsenalTransferHub {
         });
         const dedupedList = Object.values(deduped);
 
-        gridContainer.innerHTML = dedupedList.map(item => this.createRumorCard(item)).join('');
+        gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
         // Add intersection observer for animations
-        this.observeRumorCards();
+        this.observeNewsCards();
     }
 
-    createRumorCard(item) {
-        // Unified card for both rumors and tweets, no player info section
-        const isRumor = item.type === 'rumor';
-        const isTweet = item.type === 'tweet';
-        const timeAgo = this.formatTimeAgo(item.timestamp || item.date);
-        // Headline
-        let headline = '';
-        if (isRumor) {
-            headline = item.title || 'Arsenal Transfer News';
-        } else if (isTweet) {
-            // Use first sentence or first 80 chars
-            const content = item.content || '';
-            const firstSentence = content.split(/[.!?\n]/)[0];
-            headline = (firstSentence.length > 10 ? firstSentence : content.slice(0, 80)) + (content.length > 80 ? '...' : '');
-        }
-        // Source only (plain text, no badge, no author)
-        let source = 'Unknown';
-        if (isRumor) {
-            if (item.source && item.source.toLowerCase().includes('sky')) source = 'Sky Sports';
-            else if (item.source && item.source.toLowerCase().includes('athletic')) source = 'The Athletic';
-            else if (item.source) source = item.source;
-        } else if (isTweet) {
-            source = item.author || item.author_handle || 'X';
-        }
-        // Action button
-        let actionHtml = '';
-        if (isRumor && item.url) {
-            actionHtml = `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="source-link">📰 Read Article</a>`;
-        } else if (isTweet && item.url) {
-            actionHtml = `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="x-link">
-                <img src="static/images/X_logo.svg" alt="X logo" class="x-logo">View on X
-            </a>`;
-        }
-        // Card HTML
+    createNewsCard(item) {
+        // Use headline if available, otherwise fallback to title
+        const headline = item.headline || item.title || 'All For Gooners';
+        const source = item.source || 'Unknown';
+        const url = item.url || '#';
+        const image = item.image_url ? `<img src="${item.image_url}" alt="news image" class="news-image">` : '';
+        const summary = item.news_summary || '';
+        const publishedAt = item.published_at ? new Date(item.published_at).toLocaleString() : '';
+        // You can use news_date if you want to show the original article date instead
+        // const newsDate = item.news_date ? new Date(item.news_date).toLocaleString() : '';
+        const buttonLabel = (source.toLowerCase().includes('twitter') || source.toLowerCase().includes('x'))
+            ? 'View on X'
+            : 'Read Article';
+        const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
+        const buttonIcon = buttonLabel === 'View on X'
+            ? `<img src="static/images/X_logo.svg" alt="X logo" class="x-logo">`
+            : '📰 ';
+    
         return `
-            <div class="rumor-card" data-rumor-id="${item.id || item.url || ''}">
-                <h3 class="rumor-headline" style="font-weight:bold;">${headline}</h3>
-                <div class="rumor-footer" style="display:flex;justify-content:flex-start;align-items:center;gap:0.5rem;margin-top:1rem;">
+            <div class="news-card" data-news-id="${item.id || url}">
+                ${image}
+                <h3 class="news-headline" style="font-weight:bold;">${headline}</h3>
+                <div class="news-footer" style="display:flex;justify-content:flex-start;align-items:center;gap:0.5rem;margin-top:1rem;">
                     <span class="source-text">${source}</span>
                 </div>
-                <div class="rumor-links" style="margin-top:0.5rem;">
-                    ${actionHtml}
+                <div class="news-links" style="margin-top:0.5rem;">
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
+                        ${buttonIcon}${buttonLabel}
+                    </a>
                 </div>
-                <div class="rumor-meta" style="margin-top:0.5rem;">
-                    <span class="time-ago">${timeAgo}</span>
+                <div class="news-meta" style="margin-top:0.5rem;">
+                    <span class="time-ago">${publishedAt}</span>
+                </div>
+                <div class="news-summary" style="margin-top:1rem;">
+                    ${summary}
                 </div>
             </div>
         `;
@@ -270,19 +263,19 @@ class ArsenalTransferHub {
             position: positionFilter?.value || 'all'
         };
 
-        // Filter rumors from the API data
-        this.filteredRumors = Array.isArray(this.transferData.data) ? this.transferData.data.filter(rumor => {
-            if (!rumor.title) return false; // Only rumors, not tweets
+        // Filter news from the API data
+        this.filteredNews = Array.isArray(this.transferData.data) ? this.transferData.data.filter(news => {
+            if (!news.title) return false; // Only news, not tweets
             const matchesType = this.currentFilters.transferType === 'all' || 
-                              rumor.rumor_type === this.currentFilters.transferType;
+                              news.rumor_type === this.currentFilters.transferType;
             const matchesStrength = this.currentFilters.rumorStrength === 'all' || 
-                                  rumor.rumor_strength === this.currentFilters.rumorStrength;
+                                  news.rumor_strength === this.currentFilters.rumorStrength;
             const matchesPosition = this.currentFilters.position === 'all' || 
-                                  rumor.position === this.currentFilters.position;
+                                  news.position === this.currentFilters.position;
             return matchesType && matchesStrength && matchesPosition;
         }) : [];
 
-        this.renderRumors();
+        this.renderNews();
         this.showFilterNotification();
     }
 
@@ -304,7 +297,7 @@ class ArsenalTransferHub {
         `;
         notification.innerHTML = `
             <strong>Filters Applied!</strong><br>
-            Found ${this.filteredRumors.length} rumors
+            Found ${this.filteredNews.length} news
         `;
 
         document.body.appendChild(notification);
@@ -326,11 +319,11 @@ class ArsenalTransferHub {
     setupAutoRefresh() {
         // Simulate live updates in a real application
         setInterval(() => {
-            this.simulateNewRumor();
+            this.simulateNewNews();
         }, 45000); // Every 45 seconds for demo
     }
 
-    simulateNewRumor() {
+    simulateNewNews() {
         if (!this.transferData) return;
 
         // Add a visual indicator for new content
@@ -349,7 +342,7 @@ class ArsenalTransferHub {
                 font-weight: bold;
                 animation: pulse 2s infinite;
             `;
-            indicator.textContent = 'NEW RUMORS AVAILABLE';
+            indicator.textContent = 'NEW NEWS AVAILABLE';
             hero.appendChild(indicator);
 
             setTimeout(() => {
@@ -360,7 +353,7 @@ class ArsenalTransferHub {
         }
     }
 
-    observeRumorCards() {
+    observeNewsCards() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -370,7 +363,7 @@ class ArsenalTransferHub {
             });
         }, { threshold: 0.1 });
 
-        document.querySelectorAll('.rumor-card').forEach((card, index) => {
+        document.querySelectorAll('.news-card').forEach((card, index) => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(30px)';
             card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
@@ -423,17 +416,17 @@ class ArsenalTransferHub {
     }
 
     // Utility methods for enhanced functionality
-    shareRumor(rumorId) {
-        const rumor = this.transferData.latest_rumors.find(r => r.id === rumorId);
-        if (rumor && navigator.share) {
+    shareNews(newsId) {
+        const news = this.transferData.latest_news.find(r => r.id === newsId);
+        if (news && navigator.share) {
             navigator.share({
-                title: rumor.headline,
-                text: rumor.summary,
+                title: news.headline,
+                text: news.summary,
                 url: window.location.href
             });
         } else {
             // Fallback for browsers without Web Share API
-            this.copyToClipboard(`${rumor.headline}\n\n${rumor.summary}\n\nSource: ${rumor.source}`);
+            this.copyToClipboard(`${news.headline}\n\n${news.summary}\n\nSource: ${news.source}`);
         }
     }
 
@@ -475,10 +468,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new ArsenalTransferHub();
+    const app = new AllForGooners();
     
     // Make app globally available for debugging
-    window.arsenalApp = app;
+    window.allForGoonersApp = app;
 });
 
 // Service Worker registration for offline functionality (future enhancement)
@@ -505,69 +498,29 @@ class PerformanceMonitor {
 
 PerformanceMonitor.trackPageLoad();
 
-async function fetchAndDisplayRumors() {
-    const rumorsGrid = document.querySelector('.grid-container'); // or your rumors grid container
-    rumorsGrid.innerHTML = '<div>Loading...</div>';
+async function fetchAndDisplayNews() {
+    const newsGrid = document.querySelector('.grid-container');
+    newsGrid.innerHTML = '<div>Loading...</div>';
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/rumors');
-        if (!response.ok) throw new Error('Failed to fetch rumors');
-        const result = await response.json();
-        rumorsGrid.innerHTML = '';
-        const hub = new ArsenalTransferHub();
-        result.data.forEach(item => {
-            let cardHtml = '';
-            if (item.source === 'Sky Sports') {
-                // Map backend fields to your frontend card fields
-                cardHtml = hub.createRumorCard({
-                    id: item.url, // or a unique id
-                    rumor_strength: "default", // or map from item if available
-                    transfer_type: item.rumor_type || "in",
-                    headline: item.title,
-                    player: item.player_name || "N/A",
-                    position: item.position || "N/A",
-                    current_club: item.current_club || "N/A",
-                    contract_until: item.contract_until || "N/A",
-                    estimated_fee: item.transfer_fee || "N/A",
-                    reliability_score: item.reliability_score || 5,
-                    summary: item.content || "",
-                    source: item.source,
-                    journalist: item.journalist || "",
-                    source_url: item.url,
-                    twitter_url: "",
-                    twitter_activity: 0,
-                    date: item.timestamp
-                });
-            } else if (item.source === 'Twitter') {
-                // Render as a tweet card (use your tweet card system or a simple fallback)
-                cardHtml = `
-                    <div class="tweet-card">
-                        <div class="tweet-header">
-                            <span class="journalist-name">${item.author}</span>
-                            <span class="journalist-handle">@${item.author_handle}</span>
-                        </div>
-                        <div class="tweet-content">${item.content}</div>
-                        <div class="tweet-stats">
-                            <span>❤️ ${item.likes}</span>
-                            <span>🔁 ${item.retweets}</span>
-                            <span>💬 ${item.replies}</span>
-                        </div>
-                        <div class="tweet-actions">
-                            <a href="${item.url}" target="_blank" class="view-tweet-btn">View Tweet</a>
-                        </div>
-                        <div class="tweet-meta">
-                            <span>${new Date(item.timestamp).toLocaleString()}</span>
-                        </div>
-                    </div>
-                `;
-            }
-            rumorsGrid.innerHTML += cardHtml;
+        const { data, error } = await supabase
+            .from('transfer_news')
+            .select('*')
+            .order('published_at', { ascending: false });
+
+        if (error) throw error;
+
+        newsGrid.innerHTML = '';
+        const hub = new AllForGooners();
+        data.forEach(item => {
+            let cardHtml = hub.createNewsCard(item);
+            newsGrid.innerHTML += cardHtml;
         });
         // Re-apply any card animations/intersection observers
-        if (hub.observeRumorCards) hub.observeRumorCards();
+        if (hub.observeNewsCards) hub.observeNewsCards();
     } catch (error) {
-        rumorsGrid.innerHTML = '<div>Error loading rumors.</div>';
+        newsGrid.innerHTML = '<div>Error loading news.</div>';
         console.error(error);
     }
 }
 
-window.addEventListener('DOMContentLoaded', fetchAndDisplayRumors);
+window.addEventListener('DOMContentLoaded', fetchAndDisplayNews);
