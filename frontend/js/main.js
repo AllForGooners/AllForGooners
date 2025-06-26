@@ -101,7 +101,14 @@ class AllForGooners {
         const gridContainer = document.querySelector('.grid-container');
         console.log('Rendering news:', this.filteredNews);
         if (!gridContainer || !this.filteredNews) return;
-    
+
+        // Set grid columns to 2 if only 1 or 2 cards, else use default
+        if (this.filteredNews.length <= 2) {
+            gridContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        } else {
+            gridContainer.style.gridTemplateColumns = '';
+        }
+
         if (this.filteredNews.length === 0) {
             gridContainer.innerHTML = `
                 <div class="no-results" style="
@@ -116,11 +123,11 @@ class AllForGooners {
             `;
             return;
         }
-    
+
         // Deduplicate: group by deduplication key (headline/title)
         const deduped = {};
         this.filteredNews.forEach(item => {
-            let key = (item.headline || item.title || '').trim().toLowerCase();
+            let key = (item.headline || '').trim().toLowerCase();
             if (!key) return;
             // Prefer the most recent item
             if (!deduped[key] || new Date(item.published_at) > new Date(deduped[key].published_at)) {
@@ -128,7 +135,7 @@ class AllForGooners {
             }
         });
         const dedupedList = Object.values(deduped);
-    
+
         gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
         // Add intersection observer for animations
         this.observeNewsCards();
