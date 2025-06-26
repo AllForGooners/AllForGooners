@@ -226,7 +226,7 @@ body {
     margin-top: var(--spacing-lg);
 }
 
-.rumor-card {
+.news-card {
     background: linear-gradient(135deg, var(--arsenal-dark-gray) 0%, #333 100%);
     border: 2px solid var(--arsenal-red);
     border-radius: 12px;
@@ -237,7 +237,7 @@ body {
     overflow: hidden;
 }
 
-.rumor-card::before {
+.news-card:before {
     content: '';
     position: absolute;
     top: 0;
@@ -247,7 +247,7 @@ body {
     background: linear-gradient(90deg, var(--arsenal-red), var(--arsenal-gold));
 }
 
-.rumor-card:hover {
+.news-card:hover {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 12px 35px rgba(220, 20, 60, 0.3);
     border-color: var(--arsenal-gold);
@@ -846,7 +846,7 @@ body {
         letter-spacing: 1px;
     }
     
-    .rumor-card, .tweet-card, .trending-card {
+    .news-card, .tweet-card, .trending-card {
         padding: var(--spacing-sm);
     }
     
@@ -900,7 +900,7 @@ body {
         color: black;
     }
     
-    .rumor-card,
+    .news-card,
     .tweet-card,
     .trending-card {
         break-inside: avoid;
