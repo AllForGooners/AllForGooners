@@ -221,10 +221,13 @@ body {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 350px);
-    gap: var(--spacing-lg);
-    margin-top: var(--spacing-lg);
-    justify-content: center;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    justify-content: start;
 }
 
 .news-card {
@@ -801,10 +804,13 @@ body {
     
     .grid-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, 350px);
-        gap: var(--spacing-lg);
-        margin-top: var(--spacing-lg);
-        justify-content: center;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+        gap: 1.5rem;
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        justify-content: start;
     }
     
     .rumor-header {
