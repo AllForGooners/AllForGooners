@@ -60,6 +60,8 @@ class AllForGooners {
     
             this.transferData = data;
             this.filteredNews = Array.isArray(data) ? data : [];
+            console.log('Fetched news:', this.transferData);
+            console.log('Filtered news:', this.filteredNews);
         } catch (error) {
             console.error('Error loading transfer data:', error);
             this.handleDataLoadError();
@@ -97,6 +99,7 @@ class AllForGooners {
 
     renderNews() {
         const gridContainer = document.querySelector('.grid-container');
+        console.log('Rendering news:', this.filteredNews);
         if (!gridContainer || !this.filteredNews) return;
 
         if (this.filteredNews.length === 0) {
