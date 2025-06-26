@@ -101,7 +101,7 @@ class AllForGooners {
         const gridContainer = document.querySelector('.grid-container');
         console.log('Rendering news:', this.filteredNews);
         if (!gridContainer || !this.filteredNews) return;
-
+    
         if (this.filteredNews.length === 0) {
             gridContainer.innerHTML = `
                 <div class="no-results" style="
@@ -116,24 +116,19 @@ class AllForGooners {
             `;
             return;
         }
-
-        // Deduplicate: group by deduplication key (headline/content)
+    
+        // Deduplicate: group by deduplication key (headline/title)
         const deduped = {};
         this.filteredNews.forEach(item => {
-            let key = '';
-            if (item.type === 'news') {
-                key = (item.title || '').trim().toLowerCase();
-            } else if (item.type === 'tweet') {
-                key = (item.content || '').slice(0, 80).trim().toLowerCase();
-            }
+            let key = (item.headline || item.title || '').trim().toLowerCase();
             if (!key) return;
             // Prefer the most recent item
-            if (!deduped[key] || new Date(item.timestamp) > new Date(deduped[key].timestamp)) {
+            if (!deduped[key] || new Date(item.published_at) > new Date(deduped[key].published_at)) {
                 deduped[key] = item;
             }
         });
         const dedupedList = Object.values(deduped);
-
+    
         gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
         // Add intersection observer for animations
         this.observeNewsCards();
@@ -141,6 +136,7 @@ class AllForGooners {
 
     createNewsCard(item) {
         // Use headline if available, otherwise fallback to title
+        console.log('Rendering card for:', item);
         const headline = item.headline || item.title || 'All For Gooners';
         const source = item.source || 'Unknown';
         const url = item.url || '#';
