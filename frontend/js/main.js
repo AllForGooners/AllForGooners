@@ -135,16 +135,14 @@ class AllForGooners {
     }
 
     createNewsCard(item) {
-        // Use headline if available, otherwise fallback to title
+        // Use headline as the main headline
         console.log('Rendering card for:', item);
-        const headline = item.headline || item.title || 'All For Gooners';
+        const headline = item.headline || 'All For Gooners';
         const source = item.source || 'Unknown';
         const url = item.url || '#';
-        const image = item.image_url ? `<img src="${item.image_url}" alt="news image" class="news-image">` : '';
+        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image" style="max-width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:1rem;">` : '';
         const summary = item.news_summary || '';
-        const publishedAt = item.published_at ? new Date(item.published_at).toLocaleString() : '';
-        // You can use news_date if you want to show the original article date instead
-        // const newsDate = item.news_date ? new Date(item.news_date).toLocaleString() : '';
+        const publishedAt = item.published_at ? this.formatTimeAgo(item.published_at) : '';
         const buttonLabel = (source.toLowerCase().includes('twitter') || source.toLowerCase().includes('x'))
             ? 'View on X'
             : 'Read Article';
@@ -156,7 +154,8 @@ class AllForGooners {
         return `
             <div class="news-card" data-news-id="${item.id || url}">
                 ${image}
-                <h3 class="news-headline" style="font-weight:bold;">${headline}</h3>
+                <h3 class="rumor-headline" style="font-weight:bold;">${headline}</h3>
+                <div class="news-summary" style="margin-top:1rem;">${summary}</div>
                 <div class="news-footer" style="display:flex;justify-content:flex-start;align-items:center;gap:0.5rem;margin-top:1rem;">
                     <span class="source-text">${source}</span>
                 </div>
@@ -167,9 +166,6 @@ class AllForGooners {
                 </div>
                 <div class="news-meta" style="margin-top:0.5rem;">
                     <span class="time-ago">${publishedAt}</span>
-                </div>
-                <div class="news-summary" style="margin-top:1rem;">
-                    ${summary}
                 </div>
             </div>
         `;
@@ -416,10 +412,9 @@ class AllForGooners {
         const diffInSeconds = Math.floor((now - date) / 1000);
 
         if (diffInSeconds < 60) return 'Just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}h ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
         if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-        
         return date.toLocaleDateString();
     }
 
