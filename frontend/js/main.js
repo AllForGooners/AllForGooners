@@ -140,7 +140,7 @@ class AllForGooners {
         const headline = item.headline || 'All For Gooners';
         const source = item.source || 'Unknown';
         const url = item.url || '#';
-        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image" style="max-width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:1rem;">` : '';
+        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image" style="display:block;margin:0 auto 1rem auto;max-width:100%;max-height:180px;object-fit:cover;border-radius:8px;width:100%;">` : '';
         const summary = item.news_summary || '';
         const publishedAt = item.published_at ? this.formatTimeAgo(item.published_at) : '';
         const buttonLabel = (source.toLowerCase().includes('twitter') || source.toLowerCase().includes('x'))
@@ -153,9 +153,9 @@ class AllForGooners {
     
         return `
             <div class="news-card" data-news-id="${item.id || url}">
+                <h3 class="news-headline" style="font-weight:bold;font-size:1.3rem;width:100%;margin-bottom:0.5rem;">${headline}</h3>
                 ${image}
-                <h3 class="rumor-headline" style="font-weight:bold;">${headline}</h3>
-                <div class="news-summary" style="margin-top:1rem;">${summary}</div>
+                <div class="news-summary" style="margin-top:0;width:100%;">${summary}</div>
                 <div class="news-footer" style="display:flex;justify-content:flex-start;align-items:center;gap:0.5rem;margin-top:1rem;">
                     <span class="source-text">${source}</span>
                 </div>
