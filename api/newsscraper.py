@@ -38,13 +38,11 @@ class NewsScraper:
         print(f"Scraping {source_name} from {url}...")
         articles = []
         try:
-            # feedparser can handle both remote URLs and local file paths
-            feed = feedparser.parse(url)
-            print(f"  Found {len(feed.entries)} total entries in {source_name} feed. Titles:")
+            # Add a common browser User-Agent to prevent being blocked
+            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            feed = feedparser.parse(url, agent=user_agent)
+
             for entry in feed.entries:
-                # --- TEMPORARY DEBUGGING ---
-                print(f"    - {entry.title}")
-                # --- END DEBUGGING ---
                 if self._is_relevant(entry, source_name):
                     articles.append({
                         "headline": entry.title,
