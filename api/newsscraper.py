@@ -1,5 +1,6 @@
 import feedparser
 import asyncio
+from bs4 import BeautifulSoup
 
 class NewsScraper:
     """
@@ -15,6 +16,27 @@ class NewsScraper:
             'transfer', 'signing', 'signed', 'deal', 'bid', 'contract', 
             'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed', 'arsenal'
         ]
+
+    def _get_image_from_entry(self, entry):
+        """Attempts to find an image URL from various places in an RSS entry."""
+        # Check for media_content (most common for modern feeds)
+        if hasattr(entry, 'media_content') and entry.media_content:
+            for media in entry.media_content:
+                if media.get('medium') == 'image' and media.get('url'):
+                    return media.get('url')
+        
+        # Check for media_thumbnail as a fallback
+        if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+            return entry.media_thumbnail[0].get('url')
+
+        # As a last resort, parse the summary HTML for an <img> tag
+        if hasattr(entry, 'summary'):
+            soup = BeautifulSoup(entry.summary, 'html.parser')
+            img_tag = soup.find('img')
+            if img_tag and img_tag.has_attr('src'):
+                return img_tag['src']
+                
+        return None # No image found
 
     def _is_relevant(self, entry, source_name):
         """Checks if an article is a relevant Arsenal transfer story."""
@@ -46,11 +68,13 @@ class NewsScraper:
 
             for entry in feed.entries:
                 if self._is_relevant(entry, source_name):
+                    image_url = self._get_image_from_entry(entry)
                     articles.append({
                         "headline": entry.title,
                         "source_name": source_name,
                         "url": entry.link,
                         "content": entry.summary,
+                        "image_url": image_url
                     })
         except Exception as e:
             print(f"Error scraping feed {source_name}: {e}")

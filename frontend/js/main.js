@@ -125,7 +125,7 @@ class AllForGooners {
         // Use headline as the main headline
         console.log('Rendering card for:', item);
         const headline = item.headline || 'All For Gooners';
-        const source = item.source || 'Unknown';
+        const source = item.source_name || 'Unknown';
         const url = item.url || '#';
         const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image">` : '';
         const summary = item.news_summary || '';

@@ -9,7 +9,7 @@ Your tasks are to:
 1.  **Deduplicate**: Group articles about the same transfer story.
 2.  **Filter**: Discard any news not strictly about player transfers or major contract negotiations (e.g., ignore match results, general club news).
 3.  **Summarize**: For each valid transfer story, write an engaging summary of ~150 words.
-4.  **Extract Data**: Pull out the player's name, a final headline, the source URL, the source name, and the main image URL from the article's content.
+4.  **Extract Data**: Pull out the player's name, a final headline, the source URL, and the source name. Preserve the `image_url` from the input if it exists, otherwise set it to `null`.
 
 Return the result ONLY as a valid JSON array of objects. Each object must have these keys: 
 "player_name", "headline", "news_summary", "url", "source_name", "image_url", "published_at".
