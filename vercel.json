@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "api/scrape.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/scrape",
+      "schedule": "0 * * * *"
+    }
+  ]
+} 

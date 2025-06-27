@@ -1,11 +1,4 @@
 /* Arsenal Transfer Central - Retro CSS */
-/*
-  NOTE: For maintainability, consider splitting this file into:
-    - theme.css (variables/colors)
-    - layout.css (grid, flex, structure)
-    - components.css (cards, modals, buttons)
-    - responsive.css (media queries)
-*/
 
 /* CSS Custom Properties for Arsenal Theme */
 :root {
@@ -50,7 +43,6 @@ body {
     min-height: 100vh;
 }
 
-/* ========== HEADER ========== */
 /* Header Styles */
 .main-header {
     background: linear-gradient(90deg, var(--arsenal-red) 0%, var(--arsenal-dark-red) 100%);
@@ -151,7 +143,7 @@ body {
 }
 
 .ticker-label {
-    background: #000000;
+    background: var(--arsenal-red);
     color: var(--arsenal-white);
     padding: var(--spacing-xs) var(--spacing-md);
     font-family: var(--heading-font);
@@ -176,19 +168,11 @@ body {
     100% { transform: translateX(-100%); }
 }
 
-/* ========== HERO SECTION ========== */
 /* Main Content */
 .main-content {
     max-width: var(--desktop);
     margin: 0 auto;
     padding: var(--spacing-xl) var(--spacing-md);
-}
-
-/* Ensure hero section and grid container alignment */
-.hero-section,
-.grid-container {
-    max-width: 1400px;
-    margin: 0 auto;
 }
 
 /* Hero Section */
@@ -230,7 +214,6 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ========== RUMORS GRID ========== */
 /* Transfer Rumors Grid */
 .rumors-grid {
     margin-bottom: var(--spacing-xl);
@@ -238,31 +221,12 @@ body {
 
 .grid-container {
     display: grid;
-    /* Mobile-first: default to a single column */
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
 }
 
-/* For tablets and up, switch to a responsive grid */
-@media (min-width: 600px) {
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-}
-
-/* For larger desktops, allow for slightly larger cards */
-@media (min-width: 1200px) {
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        padding: 0; /* Remove padding to align with hero section */
-    }
-}
-
-.news-card {
+.rumor-card {
     background: linear-gradient(135deg, var(--arsenal-dark-gray) 0%, #333 100%);
     border: 2px solid var(--arsenal-red);
     border-radius: 12px;
@@ -271,12 +235,9 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
 }
 
-.news-card:before {
+.rumor-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -286,91 +247,10 @@ body {
     background: linear-gradient(90deg, var(--arsenal-red), var(--arsenal-gold));
 }
 
-.news-card:hover {
+.rumor-card:hover {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 12px 35px rgba(220, 20, 60, 0.3);
     border-color: var(--arsenal-gold);
-}
-
-/* News card content structure for top/bottom alignment */
-.news-card__content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.news-card__header {
-    /* Top section - headline and image */
-    flex-grow: 0;
-}
-
-.news-card__body {
-    /* Middle section - summary */
-    flex-grow: 1;
-    margin: var(--spacing-sm) 0;
-}
-
-.news-card__footer {
-    /* Bottom section - source, url, published_at */
-    flex-grow: 0;
-    margin-top: auto;
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid #555;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.news-card__source-info {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
-}
-
-.news-headline {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--arsenal-white);
-    margin-bottom: var(--spacing-sm);
-    line-height: 1.4;
-}
-
-.news-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: var(--spacing-sm);
-}
-
-.news-summary {
-    color: #ddd;
-    line-height: 1.5;
-    margin-bottom: var(--spacing-sm);
-}
-
-.news-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-}
-
-.news-meta {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    font-size: 0.9rem;
-    color: #888;
-}
-
-.news-links {
-    display: flex;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
 }
 
 .rumor-header {
@@ -414,6 +294,14 @@ body {
 .transfer-type.incoming { background: var(--retro-green); color: white; }
 .transfer-type.outgoing { background: #ff6666; color: white; }
 .transfer-type.contract_extension { background: var(--arsenal-gold); color: var(--arsenal-red); }
+
+.rumor-headline {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--arsenal-white);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
 
 .player-info {
     display: grid;
@@ -521,38 +409,188 @@ body {
 }
 
 .twitter-link {
-    background: #1DA1F2;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1.2rem;
-    border-radius: 4px;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-block;
-    margin-right: 0.5rem;
-    transition: background 0.2s, color 0.2s;
+    background: #1da1f2;
+    color: white;
+    border-color: #1da1f2;
 }
 
 .twitter-link:hover {
-    background: #0d8ddb;
-    color: #fff;
-    text-decoration: underline;
+    background: #1991d9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(29, 161, 242, 0.3);
 }
 
-/* ========== FILTERS & MODALS ========== */
-/* Filter Components */
-.filter-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    /* Remove the side padding to allow content to align with hero-section */
-    /* padding: 0 var(--spacing-md); */
+/* Twitter Feed Section */
+.twitter-feed {
+    margin-bottom: var(--spacing-xl);
+}
+
+.twitter-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.tweet-card {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    border: 2px solid #1da1f2;
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    box-shadow: 0 4px 15px rgba(29, 161, 242, 0.2);
+    transition: all 0.3s ease;
+}
+
+.tweet-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(29, 161, 242, 0.3);
+}
+
+.tweet-header {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: var(--spacing-md);
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
 }
 
+.journalist-name {
+    font-weight: 700;
+    color: var(--arsenal-white);
+}
+
+.journalist-handle {
+    color: #1da1f2;
+    font-size: 0.9rem;
+}
+
+.tweet-content {
+    color: #ddd;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-sm);
+}
+
+.tweet-stats {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 0.8rem;
+    color: #888;
+    flex-wrap: wrap;
+}
+
+.tweet-actions {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid #333;
+}
+
+.view-tweet-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #1da1f2;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid #1da1f2;
+}
+
+.view-tweet-btn:hover {
+    background: #1991d9;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(29, 161, 242, 0.4);
+}
+
+/* Trending Section */
+.trending-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.trending-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.trending-card {
+    background: linear-gradient(135deg, var(--arsenal-dark-gray) 0%, #333 100%);
+    border: 2px solid var(--arsenal-gold);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.trending-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+}
+
+.trending-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--arsenal-white);
+    margin-bottom: var(--spacing-xs);
+}
+
+.trending-summary {
+    color: #ccc;
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
+
+.trending-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #888;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.engagement-score {
+    color: var(--arsenal-gold);
+    font-weight: 600;
+}
+
+.trending-actions {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid #444;
+}
+
+.read-story-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--arsenal-gold);
+    color: var(--arsenal-red);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: 1px solid var(--arsenal-gold);
+}
+
+.read-story-btn:hover {
+    background: #e6c200;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
+}
+
+/* Filter Components */
 .filter-toggle-btn {
-    position: static;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
     background: var(--arsenal-red);
     color: white;
     border: none;
@@ -563,6 +601,7 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4);
     transition: all 0.3s ease;
+    z-index: 1000;
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
@@ -682,7 +721,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* ========== FOOTER ========== */
 /* Footer */
 .main-footer {
     background: linear-gradient(135deg, var(--arsenal-red) 0%, var(--arsenal-dark-red) 100%);
@@ -753,8 +791,9 @@ body {
         gap: var(--spacing-sm);
     }
     
-    .news-image {
-        height: 180px;
+    .grid-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
     }
     
     .rumor-header {
@@ -776,9 +815,8 @@ body {
     }
     
     .filter-toggle-btn {
-        margin-top: var(--spacing-sm);
-        padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 0.9rem;
+        bottom: 1rem;
+        right: 1rem;
     }
     
     .arsenal-logo {
@@ -801,16 +839,8 @@ body {
         letter-spacing: 1px;
     }
     
-    .news-card {
+    .rumor-card, .tweet-card, .trending-card {
         padding: var(--spacing-sm);
-    }
-    
-    .news-image {
-        height: 160px;
-    }
-    
-    .news-headline {
-        font-size: 1.1rem;
     }
     
     .ticker-content {
@@ -821,12 +851,6 @@ body {
     .ticker-label {
         padding: var(--spacing-xs) var(--spacing-sm);
         font-size: 0.8rem;
-    }
-    
-    .filter-toggle-btn {
-        width: 100%;
-        justify-content: center;
-        margin-top: var(--spacing-sm);
     }
 }
 
@@ -869,115 +893,11 @@ body {
         color: black;
     }
     
-    .news-card,
+    .rumor-card,
     .tweet-card,
     .trending-card {
         break-inside: avoid;
         border: 1px solid black;
         background: white;
     }
-}
-
-/* X (Twitter) button style */
-.x-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: 1px solid #000;
-    background: #000;
-    color: #fff !important;
-    font-family: var(--body-font);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.x-link:hover {
-    background: #222;
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.x-logo {
-    height: 1em;
-    width: 1em;
-    vertical-align: middle;
-}
-
-.source-text {
-    background: none !important;
-    color: inherit !important;
-    font-weight: normal;
-    padding: 0;
-    border: none;
-}
-
-/* ========== NOTIFICATIONS & ERRORS ========== */
-.rumors__notification {
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: var(--arsenal-red);
-    color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    transform: translateX(300px);
-    transition: transform 0.3s ease;
-    font-family: var(--body-font);
-    font-size: 1rem;
-    min-width: 220px;
-}
-
-.rumors__notification--show {
-    transform: translateX(0);
-}
-
-.rumors__error-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2rem;
-    background: rgba(220, 20, 60, 0.1);
-    border: 2px solid var(--arsenal-red);
-    border-radius: 8px;
-    color: var(--arsenal-white);
-    font-family: var(--body-font);
-    font-size: 1.1rem;
-}
-
-.rumors__error-retry-btn {
-    background: var(--arsenal-red);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    margin-top: 1rem;
-    cursor: pointer;
-    font-family: var(--body-font);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.rumors__error-retry-btn:hover {
-    background: var(--arsenal-dark-red);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
-}
-
-.rumors__new-news-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--arsenal-gold);
-    color: var(--arsenal-red);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    animation: pulse 2s infinite;
-    font-family: var(--body-font);
 }

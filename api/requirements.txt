@@ -1,0 +1,16 @@
+# Core libraries
+fastapi
+uvicorn
+
+# Scraping
+beautifulsoup4
+playwright
+twscrape
+
+# API & DB Clients
+httpx
+supabase
+
+# For Vercel deployment, to ensure browsers for Playwright are installed
+playwright install-deps
+playwright install chromium 
