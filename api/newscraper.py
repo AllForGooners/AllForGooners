@@ -1,5 +1,7 @@
 import feedparser
 import asyncio
+import re
+from bs4 import BeautifulSoup
 
 class NewsScraper:
     """
@@ -17,13 +19,47 @@ class NewsScraper:
             'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed'
         ]
 
+    def _get_image_from_entry(self, entry):
+        """Attempts to find an image URL from various places in an RSS entry."""
+        image_url = None
+        # Check for media_content (most common for modern feeds)
+        if hasattr(entry, 'media_content') and entry.media_content:
+            for media in entry.media_content:
+                if media.get('medium') == 'image' and media.get('url'):
+                    image_url = media.get('url')
+                    break
+        
+        # Check for media_thumbnail as a fallback
+        if not image_url and hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+            image_url = entry.media_thumbnail[0].get('url')
+
+        # As a last resort, parse the summary HTML for an <img> tag
+        if not image_url and hasattr(entry, 'summary'):
+            soup = BeautifulSoup(entry.summary, 'html.parser')
+            img_tag = soup.find('img')
+            if img_tag and img_tag.has_attr('src'):
+                image_url = img_tag['src']
+
+        # If we found a BBC image, try to get a higher resolution version
+        if image_url and 'bbci.co.uk' in image_url:
+            try:
+                # e.g., .../cps/480/... becomes .../cps/976/...
+                image_url = re.sub(r'/cps/\d+/', '/cps/976/', image_url)
+            except Exception:
+                pass # If regex fails, use the original URL
+                
+        return image_url
+
     def _is_relevant(self, entry, source_name):
         """Checks if an article is a relevant Arsenal transfer story."""
         content_lower = (entry.title + entry.summary).lower()
 
-        # For journalists, we only need the keyword "arsenal"
+        # For journalists, we are more lenient and check for "arsenal" or "#afc"
         if source_name in ["Fabrizio Romano", "David Ornstein"]:
-            return 'arsenal' in content_lower
+            is_relevant_tweet = 'arsenal' in content_lower or '#afc' in content_lower
+            if is_relevant_tweet:
+                print(f"[DEBUG] Found relevant tweet from {source_name}: {entry.title}")
+            return is_relevant_tweet
 
         # For news sites, we need "arsenal" AND a transfer keyword
         if 'arsenal' in content_lower:
