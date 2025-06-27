@@ -12,7 +12,8 @@ class NewsScraper:
         self.feeds = {
             "Fabrizio Romano": "https://nitter.net/FabrizioRomano/rss",
             "David Ornstein": "https://nitter.net/David_Ornstein/rss",
-            "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml"
+            "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml",
+            "Sky Sports": "https://www.skysports.com/rss/11095"
         }
         self.transfer_keywords = [
             'transfer', 'signing', 'signed', 'deal', 'bid', 'contract', 
@@ -37,8 +38,8 @@ class NewsScraper:
         if not image_url and hasattr(entry, 'summary'):
             soup = BeautifulSoup(entry.summary, 'html.parser')
             img_tag = soup.find('img')
-            if img_tag and img_tag.has_attr('src'):
-                image_url = img_tag['src']
+            if img_tag and hasattr(img_tag, 'src'):
+                image_url = img_tag.get('src')
 
         # If we found a BBC image, try to get a higher resolution version
         if image_url and 'bbci.co.uk' in image_url:
@@ -72,17 +73,18 @@ class NewsScraper:
         print(f"Scraping {source_name} from {url}...")
         articles = []
         try:
-            # Add a common browser User-Agent to prevent being blocked
             user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             feed = feedparser.parse(url, agent=user_agent)
 
             for entry in feed.entries:
                 if self._is_relevant(entry, source_name):
+                    image_url = self._get_image_from_entry(entry)
                     articles.append({
                         "headline": entry.title,
                         "source_name": source_name,
                         "url": entry.link,
                         "content": entry.summary,
+                        "image_url": image_url
                     })
         except Exception as e:
             print(f"Error scraping feed {source_name}: {e}")
@@ -93,6 +95,7 @@ class NewsScraper:
     async def scrape_all(self):
         """Scrapes all feeds and returns a list of all relevant articles."""
         all_articles = []
+        # Loop through feeds sequentially to ensure all are processed and logged.
         for source_name, url in self.feeds.items():
             articles = await self._scrape_feed(source_name, url)
             all_articles.extend(articles)

@@ -3,7 +3,7 @@ import json
 import asyncio
 from datetime import datetime, timezone
 from supabase import create_client, Client
-from newsscraper import NewsScraper
+from newscraper import NewsScraper
 from llm_processor import process_with_llm
 
 # --- CONFIGURATION ---
