@@ -1,5 +1,5 @@
 import asyncio
-from twscrape import API, gather
+from twscrape import API
 from twscrape.logger import set_log_level
 
 class TwitterScraper:
@@ -22,7 +22,7 @@ class TwitterScraper:
         # ]
         # This is necessary for twscrape to work reliably.
         try:
-            await self.api.pool.load_from_file("accounts.json")
+            await self.api.pool.load_from_file("api/accounts.json", line_format="user:pass:email:email_pass")
             await self.api.pool.login_all()
             print(f"Successfully logged in {len(self.api.pool.accounts)} Twitter accounts.")
         except Exception as e:
@@ -55,7 +55,7 @@ class TwitterScraper:
         await self._login_accounts()
         
         tasks = [self.scrape_journalist(name) for name in self.journalists]
-        results = await gather(*tasks) # Use twscrape's `gather`
+        results = await asyncio.gather(*tasks) # Use asyncio.gather
         
         all_posts = []
         for res in results:
