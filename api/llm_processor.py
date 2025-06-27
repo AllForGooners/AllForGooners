@@ -34,7 +34,7 @@ async def process_with_llm(articles, api_key):
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "google/gemini-pro",
+                    "model": "google/gemini-2.0-flash-exp:free",
                     "messages": [
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": json.dumps(articles)}

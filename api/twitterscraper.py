@@ -1,4 +1,5 @@
 import asyncio
+import json
 from twscrape import API
 from twscrape.logger import set_log_level
 
@@ -22,7 +23,11 @@ class TwitterScraper:
         # ]
         # This is necessary for twscrape to work reliably.
         try:
-            await self.api.pool.load_from_file("api/accounts.json", line_format="user:pass:email:email_pass")
+            with open("api/accounts.json", "r") as f:
+                accounts = json.load(f)
+            for acc in accounts:
+                await self.api.pool.add_account(*acc)
+            
             await self.api.pool.login_all()
             print(f"Successfully logged in {len(self.api.pool.accounts)} Twitter accounts.")
         except Exception as e:
