@@ -127,7 +127,7 @@ class AllForGooners {
         const headline = item.headline || 'All For Gooners';
         const source = item.source || 'Unknown';
         const url = item.url || '#';
-        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image" style="display:block;margin:0 auto 1rem auto;max-width:100%;max-height:180px;object-fit:cover;border-radius:8px;width:100%;">` : '';
+        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image">` : '';
         const summary = item.news_summary || '';
         const publishedAt = item.published_at ? this.formatTimeAgo(item.published_at) : '';
         const buttonLabel = (source.toLowerCase().includes('twitter') || source.toLowerCase().includes('x'))
@@ -135,24 +135,32 @@ class AllForGooners {
             : 'Read Article';
         const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
         const buttonIcon = buttonLabel === 'View on X'
-            ? `<img src="static/images/X_logo.svg" alt="X logo" class="x-logo">`
+            ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
             : '📰 ';
     
         return `
             <div class="news-card" data-news-id="${item.id || url}">
-                <h3 class="news-headline" style="font-weight:bold;font-size:1.3rem;width:100%;margin-bottom:0.5rem;">${headline}</h3>
-                ${image}
-                <div class="news-summary" style="margin-top:0;width:100%;">${summary}</div>
-                <div class="news-footer" style="display:flex;justify-content:flex-start;align-items:center;gap:0.5rem;margin-top:1rem;">
-                    <span class="source-text">${source}</span>
-                </div>
-                <div class="news-links" style="margin-top:0.5rem;">
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
-                        ${buttonIcon}${buttonLabel}
-                    </a>
-                </div>
-                <div class="news-meta" style="margin-top:0.5rem;">
-                    <span class="time-ago">${publishedAt}</span>
+                <div class="news-card__content">
+                    <div class="news-card__header">
+                        <h3 class="news-headline">${headline}</h3>
+                        ${image}
+                    </div>
+                    <div class="news-card__body">
+                        <div class="news-summary">${summary}</div>
+                    </div>
+                    <div class="news-card__footer">
+                        <div class="news-footer">
+                            <span class="source-text">${source}</span>
+                        </div>
+                        <div class="news-links">
+                            <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
+                                ${buttonIcon}${buttonLabel}
+                            </a>
+                        </div>
+                        <div class="news-meta">
+                            <span class="time-ago">${publishedAt}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;

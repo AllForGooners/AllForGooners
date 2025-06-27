@@ -151,7 +151,7 @@ body {
 }
 
 .ticker-label {
-    background: var(--arsenal-red);
+    background: #000000;
     color: var(--arsenal-white);
     padding: var(--spacing-xs) var(--spacing-md);
     font-family: var(--heading-font);
@@ -238,13 +238,12 @@ body {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, minmax(350px, 400px)); /* Fixed 3 columns */
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 1.5rem;
     padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
-    justify-content: start; /* Keeps cards aligned to left when fewer than 3 */
 }
 
 .news-card {
@@ -256,6 +255,9 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .news-card:before {
@@ -272,6 +274,76 @@ body {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 12px 35px rgba(220, 20, 60, 0.3);
     border-color: var(--arsenal-gold);
+}
+
+/* News card content structure for top/bottom alignment */
+.news-card__content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.news-card__header {
+    /* Top section - headline and image */
+    flex-grow: 0;
+}
+
+.news-card__body {
+    /* Middle section - summary */
+    flex-grow: 1;
+    margin: var(--spacing-sm) 0;
+}
+
+.news-card__footer {
+    /* Bottom section - source, url, published_at */
+    flex-grow: 0;
+    margin-top: auto;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid #555;
+}
+
+.news-headline {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--arsenal-white);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
+
+.news-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.news-summary {
+    color: #ddd;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-sm);
+}
+
+.news-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.news-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.news-links {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .rumor-header {
@@ -315,14 +387,6 @@ body {
 .transfer-type.incoming { background: var(--retro-green); color: white; }
 .transfer-type.outgoing { background: #ff6666; color: white; }
 .transfer-type.contract_extension { background: var(--arsenal-gold); color: var(--arsenal-red); }
-
-.rumor-headline {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--arsenal-white);
-    margin-bottom: var(--spacing-sm);
-    line-height: 1.4;
-}
 
 .player-info {
     display: grid;
@@ -451,9 +515,7 @@ body {
 /* ========== FILTERS & MODALS ========== */
 /* Filter Components */
 .filter-toggle-btn {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
+    position: static;
     background: var(--arsenal-red);
     color: white;
     border: none;
@@ -464,10 +526,11 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4);
     transition: all 0.3s ease;
-    z-index: 1000;
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
+    margin-left: auto;
+    margin-top: var(--spacing-md);
 }
 
 .filter-toggle-btn:hover {
@@ -656,14 +719,13 @@ body {
     }
     
     .grid-container {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(350px, 400px)); /* Fixed 3 columns */
-        gap: 1.5rem;
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-        width: 100%;
-        justify-content: start; /* Keeps cards aligned to left when fewer than 3 */
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-md);
+        padding: 1rem;
+    }
+    
+    .news-image {
+        height: 180px;
     }
     
     .rumor-header {
@@ -685,8 +747,9 @@ body {
     }
     
     .filter-toggle-btn {
-        bottom: 1rem;
-        right: 1rem;
+        margin-top: var(--spacing-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.9rem;
     }
     
     .arsenal-logo {
@@ -709,8 +772,22 @@ body {
         letter-spacing: 1px;
     }
     
-    .news-card, .tweet-card, .trending-card {
+    .grid-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+        padding: 0.5rem;
+    }
+    
+    .news-card {
         padding: var(--spacing-sm);
+    }
+    
+    .news-image {
+        height: 160px;
+    }
+    
+    .news-headline {
+        font-size: 1.1rem;
     }
     
     .ticker-content {
@@ -721,6 +798,12 @@ body {
     .ticker-label {
         padding: var(--spacing-xs) var(--spacing-sm);
         font-size: 0.8rem;
+    }
+    
+    .filter-toggle-btn {
+        width: 100%;
+        justify-content: center;
+        margin-top: var(--spacing-sm);
     }
 }
 
@@ -841,6 +924,25 @@ body {
     color: var(--arsenal-white);
     font-family: var(--body-font);
     font-size: 1.1rem;
+}
+
+.rumors__error-retry-btn {
+    background: var(--arsenal-red);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-family: var(--body-font);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.rumors__error-retry-btn:hover {
+    background: var(--arsenal-dark-red);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
 }
 
 .rumors__new-news-indicator {
