@@ -42,6 +42,14 @@ class NewsScraper:
             user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             feed = feedparser.parse(url, agent=user_agent)
 
+            # --- DIAGNOSTIC CHECK ---
+            if feed.bozo:
+                print(f"  [WARNING] Feed for {source_name} is not well-formed. Reason: {feed.bozo_exception}")
+            
+            if not feed.entries:
+                print(f"  [INFO] Feed for {source_name} has 0 entries. Status: {feed.get('status', 'N/A')}")
+            # --- END DIAGNOSTIC ---
+
             for entry in feed.entries:
                 if self._is_relevant(entry, source_name):
                     articles.append({
