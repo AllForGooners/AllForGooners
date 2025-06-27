@@ -12,23 +12,6 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
-# --- MAIN HANDLER for Vercel ---
-# Vercel will call this function when the cron job runs.
-def handler(request, response):
-    print("Starting scheduled scrape task...")
-    try:
-        # Run the main async function
-        asyncio.run(main())
-        
-        # Send success response
-        response.status_code = 200
-        response.send("Scraping and processing completed successfully.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        # Send error response
-        response.status_code = 500
-        response.send(f"An error occurred: {str(e)}")
-
 # --- ASYNC MAIN ---
 async def main():
     # 1. Initialize Supabase client
@@ -73,6 +56,18 @@ async def main():
             raise
     
     print("Scraping task finished.")
+
+# --- ENTRY POINT for direct execution ---
+# This allows the script to be run from the command line by GitHub Actions
+if __name__ == "__main__":
+    print("Starting scheduled scrape task...")
+    try:
+        asyncio.run(main())
+        print("Scraping and processing completed successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # Exit with a non-zero status code to indicate failure to GitHub Actions
+        exit(1)
 
 # --- HELPER MODULES (to be created next) ---
 # We will create the following files next:
