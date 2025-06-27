@@ -1,4 +1,11 @@
 /* Arsenal Transfer Central - Retro CSS */
+/*
+  NOTE: For maintainability, consider splitting this file into:
+    - theme.css (variables/colors)
+    - layout.css (grid, flex, structure)
+    - components.css (cards, modals, buttons)
+    - responsive.css (media queries)
+*/
 
 /* CSS Custom Properties for Arsenal Theme */
 :root {
@@ -43,6 +50,7 @@ body {
     min-height: 100vh;
 }
 
+/* ========== HEADER ========== */
 /* Header Styles */
 .main-header {
     background: linear-gradient(90deg, var(--arsenal-red) 0%, var(--arsenal-dark-red) 100%);
@@ -168,6 +176,7 @@ body {
     100% { transform: translateX(-100%); }
 }
 
+/* ========== HERO SECTION ========== */
 /* Main Content */
 .main-content {
     max-width: var(--desktop);
@@ -221,6 +230,7 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* ========== RUMORS GRID ========== */
 /* Transfer Rumors Grid */
 .rumors-grid {
     margin-bottom: var(--spacing-xl);
@@ -438,172 +448,7 @@ body {
     text-decoration: underline;
 }
 
-/* Twitter Feed Section */
-.twitter-feed {
-    margin-bottom: var(--spacing-xl);
-}
-
-.twitter-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
-}
-
-.tweet-card {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-    border: 2px solid #1da1f2;
-    border-radius: 12px;
-    padding: var(--spacing-md);
-    box-shadow: 0 4px 15px rgba(29, 161, 242, 0.2);
-    transition: all 0.3s ease;
-}
-
-.tweet-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(29, 161, 242, 0.3);
-}
-
-.tweet-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
-}
-
-.journalist-name {
-    font-weight: 700;
-    color: var(--arsenal-white);
-}
-
-.journalist-handle {
-    color: #1da1f2;
-    font-size: 0.9rem;
-}
-
-.tweet-content {
-    color: #ddd;
-    line-height: 1.5;
-    margin-bottom: var(--spacing-sm);
-}
-
-.tweet-stats {
-    display: flex;
-    gap: var(--spacing-md);
-    font-size: 0.8rem;
-    color: #888;
-    flex-wrap: wrap;
-}
-
-.tweet-actions {
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid #333;
-}
-
-.view-tweet-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    background: #1da1f2;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: 1px solid #1da1f2;
-}
-
-.view-tweet-btn:hover {
-    background: #1991d9;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(29, 161, 242, 0.4);
-}
-
-/* Trending Section */
-.trending-section {
-    margin-bottom: var(--spacing-xl);
-}
-
-.trending-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
-}
-
-.trending-card {
-    background: linear-gradient(135deg, var(--arsenal-dark-gray) 0%, #333 100%);
-    border: 2px solid var(--arsenal-gold);
-    border-radius: 8px;
-    padding: var(--spacing-md);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-}
-
-.trending-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
-}
-
-.trending-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--arsenal-white);
-    margin-bottom: var(--spacing-xs);
-}
-
-.trending-summary {
-    color: #ccc;
-    font-size: 0.9rem;
-    margin-bottom: var(--spacing-sm);
-    line-height: 1.4;
-}
-
-.trending-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: #888;
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-}
-
-.engagement-score {
-    color: var(--arsenal-gold);
-    font-weight: 600;
-}
-
-.trending-actions {
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid #444;
-}
-
-.read-story-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    background: var(--arsenal-gold);
-    color: var(--arsenal-red);
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    border: 1px solid var(--arsenal-gold);
-}
-
-.read-story-btn:hover {
-    background: #e6c200;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
-}
-
+/* ========== FILTERS & MODALS ========== */
 /* Filter Components */
 .filter-toggle-btn {
     position: fixed;
@@ -739,6 +584,7 @@ body {
     font-size: 1.1rem;
 }
 
+/* ========== FOOTER ========== */
 /* Footer */
 .main-footer {
     background: linear-gradient(135deg, var(--arsenal-red) 0%, var(--arsenal-dark-red) 100%);
@@ -961,4 +807,52 @@ body {
     font-weight: normal;
     padding: 0;
     border: none;
+}
+
+/* ========== NOTIFICATIONS & ERRORS ========== */
+.rumors__notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: var(--arsenal-red);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    transform: translateX(300px);
+    transition: transform 0.3s ease;
+    font-family: var(--body-font);
+    font-size: 1rem;
+    min-width: 220px;
+}
+
+.rumors__notification--show {
+    transform: translateX(0);
+}
+
+.rumors__error-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    background: rgba(220, 20, 60, 0.1);
+    border: 2px solid var(--arsenal-red);
+    border-radius: 8px;
+    color: var(--arsenal-white);
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+}
+
+.rumors__new-news-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--arsenal-gold);
+    color: var(--arsenal-red);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+    font-family: var(--body-font);
 }

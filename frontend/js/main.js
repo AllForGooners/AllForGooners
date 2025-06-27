@@ -72,26 +72,10 @@ class AllForGooners {
         const gridContainer = document.querySelector('.grid-container');
         if (gridContainer) {
             gridContainer.innerHTML = `
-                <div class="error-message" style="
-                    grid-column: 1 / -1;
-                    text-align: center;
-                    padding: 2rem;
-                    background: rgba(220, 20, 60, 0.1);
-                    border: 2px solid var(--arsenal-red);
-                    border-radius: 8px;
-                    color: var(--arsenal-white);
-                ">
+                <div class="rumors__error-message" role="alert">
                     <h3>🚨 Unable to load transfer news</h3>
                     <p>Please check your connection and try again.</p>
-                    <button onclick="location.reload()" style="
-                        background: var(--arsenal-red);
-                        color: white;
-                        border: none;
-                        padding: 0.5rem 1rem;
-                        border-radius: 4px;
-                        margin-top: 1rem;
-                        cursor: pointer;
-                    ">Retry</button>
+                    <button onclick="location.reload()" class="rumors__error-retry-btn">Retry</button>
                 </div>
             `;
         }
@@ -255,6 +239,32 @@ class AllForGooners {
 
         // Auto-refresh simulation (every 30 seconds in a real app)
         this.setupAutoRefresh();
+
+        // Modal accessibility: trap focus and ARIA
+        if (filterModal) {
+            filterModal.setAttribute('role', 'dialog');
+            filterModal.setAttribute('aria-modal', 'true');
+            filterModal.setAttribute('aria-labelledby', 'filterModalTitle');
+            // Trap focus inside modal when open
+            filterModal.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    const focusableEls = filterModal.querySelectorAll('button, [tabindex]:not([tabindex="-1"]), select');
+                    const firstEl = focusableEls[0];
+                    const lastEl = focusableEls[focusableEls.length - 1];
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstEl) {
+                            e.preventDefault();
+                            lastEl.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastEl) {
+                            e.preventDefault();
+                            firstEl.focus();
+                        }
+                    }
+                }
+            });
+        }
     }
 
     applyFilters() {
@@ -285,36 +295,25 @@ class AllForGooners {
     }
 
     showFilterNotification() {
+        // Create notification element with ARIA
         const notification = document.createElement('div');
-        notification.className = 'filter-notification';
-        notification.style.cssText = `
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: var(--arsenal-red);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
-            transform: translateX(300px);
-            transition: transform 0.3s ease;
-        `;
+        notification.className = 'rumors__notification';
+        notification.setAttribute('role', 'status');
+        notification.setAttribute('aria-live', 'polite');
+        notification.tabIndex = 0;
         notification.innerHTML = `
             <strong>Filters Applied!</strong><br>
             Found ${this.filteredNews.length} news
         `;
-
         document.body.appendChild(notification);
-
         // Animate in
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
+            notification.classList.add('rumors__notification--show');
+            notification.focus();
         }, 100);
-
         // Remove after 3 seconds
         setTimeout(() => {
-            notification.style.transform = 'translateX(300px)';
+            notification.classList.remove('rumors__notification--show');
             setTimeout(() => {
                 if (document.body.contains(notification)) {
                     document.body.removeChild(notification);
@@ -332,26 +331,15 @@ class AllForGooners {
 
     simulateNewNews() {
         if (!this.transferData) return;
-
         // Add a visual indicator for new content
         const hero = document.querySelector('.hero-section');
         if (hero) {
             const indicator = document.createElement('div');
-            indicator.style.cssText = `
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: var(--arsenal-gold);
-                color: var(--arsenal-red);
-                padding: 0.5rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: bold;
-                animation: pulse 2s infinite;
-            `;
+            indicator.className = 'rumors__new-news-indicator';
+            indicator.setAttribute('role', 'status');
+            indicator.setAttribute('aria-live', 'polite');
             indicator.textContent = 'NEW NEWS AVAILABLE';
             hero.appendChild(indicator);
-
             setTimeout(() => {
                 if (hero.contains(indicator)) {
                     hero.removeChild(indicator);
@@ -452,24 +440,25 @@ class AllForGooners {
     }
 
     showNotification(message) {
+        // General notification for copy/share, using BEM and ARIA
         const notification = document.createElement('div');
+        notification.className = 'rumors__notification';
+        notification.setAttribute('role', 'status');
+        notification.setAttribute('aria-live', 'polite');
+        notification.tabIndex = 0;
         notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            background: var(--arsenal-green);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            z-index: 1002;
-        `;
         document.body.appendChild(notification);
-        
         setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
+            notification.classList.add('rumors__notification--show');
+            notification.focus();
+        }, 100);
+        setTimeout(() => {
+            notification.classList.remove('rumors__notification--show');
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
         }, 3000);
     }
 }
@@ -522,26 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Service Worker registration for offline functionality (future enhancement)
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        // navigator.serviceWorker.register('/sw.js'); // Uncomment when implementing PWA features
-    });
-}
-
-// Analytics and performance monitoring (placeholder)
-class PerformanceMonitor {
-    static trackPageLoad() {
-        window.addEventListener('load', () => {
-            const loadTime = performance.now();
-            console.log(`Page loaded in ${loadTime.toFixed(2)}ms`);
-        });
-    }
-    
-    static trackUserInteraction(eventType, element) {
-        // Track user interactions for analytics
-        console.log(`User interaction: ${eventType} on ${element}`);
-    }
-}
-
-PerformanceMonitor.trackPageLoad();
+// Add CSS classes for notification and error message instead of inline styles
+// Add ARIA attributes and focus management for modals and notifications
+// Remove analytics/service worker placeholders
