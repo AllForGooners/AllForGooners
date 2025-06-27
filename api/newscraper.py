@@ -1,7 +1,7 @@
 import feedparser
 import asyncio
 import re
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 class NewsScraper:
     """
@@ -10,8 +10,8 @@ class NewsScraper:
     """
     def __init__(self):
         self.feeds = {
-            "Fabrizio Romano": "https://nitter.cz/FabrizioRomano/rss",
-            "David Ornstein": "https://nitter.cz/David_Ornstein/rss",
+            "Fabrizio Romano": "https://xcancel.com/FabrizioRomano/rss",
+            "David Ornstein": "https://xcancel.com/David_Ornstein/rss",
             "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml",
             "Sky Sports": "https://www.skysports.com/rss/11095"
         }
@@ -38,14 +38,14 @@ class NewsScraper:
         if not image_url and hasattr(entry, 'summary'):
             soup = BeautifulSoup(entry.summary, 'html.parser')
             img_tag = soup.find('img')
-            if img_tag and hasattr(img_tag, 'src'):
+            if isinstance(img_tag, Tag) and img_tag.get('src'):
                 image_url = img_tag.get('src')
 
         # If we found a BBC image, try to get a higher resolution version
-        if image_url and 'bbci.co.uk' in image_url:
+        if image_url and isinstance(image_url, str) and 'bbci.co.uk' in image_url:
             try:
                 # e.g., .../cps/480/... becomes .../cps/976/...
-                image_url = re.sub(r'/cps/\d+/', '/cps/976/', image_url)
+                image_url = re.sub(r'/cps/\\d+/', '/cps/976/', image_url)
             except Exception:
                 pass # If regex fails, use the original URL
                 
