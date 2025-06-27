@@ -40,8 +40,11 @@ class NewsScraper:
         try:
             # feedparser can handle both remote URLs and local file paths
             feed = feedparser.parse(url)
-            
+            print(f"  Found {len(feed.entries)} total entries in {source_name} feed. Titles:")
             for entry in feed.entries:
+                # --- TEMPORARY DEBUGGING ---
+                print(f"    - {entry.title}")
+                # --- END DEBUGGING ---
                 if self._is_relevant(entry, source_name):
                     articles.append({
                         "headline": entry.title,
