@@ -76,6 +76,13 @@ class NewsScraper:
             user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             feed = feedparser.parse(url, agent=user_agent)
 
+            # --- TEMPORARY DEBUGGING ---
+            if source_name in ["Fabrizio Romano", "David Ornstein"]:
+                print(f"  [DEBUG] Raw tweet titles from {source_name}:")
+                for entry in feed.entries:
+                    print(f"    - {entry.title}")
+            # --- END DEBUGGING ---
+
             for entry in feed.entries:
                 if self._is_relevant(entry, source_name):
                     image_url = self._get_image_from_entry(entry)
