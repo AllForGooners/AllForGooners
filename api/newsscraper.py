@@ -8,30 +8,24 @@ class NewsScraper:
     """
     def __init__(self):
         self.feeds = {
-            "Fabrizio Romano": "https://rss.app/feed/7p2MgxJ88tQ3V35q",
-            "David Ornstein": "https://rss.app/feed/Glfiywdo14rqxTEm",
-            "Sky Sports": "https://www.skysports.com/rss/football/teams/arsenal"
+            "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml",
+            "Sky Sports": "https://www.skysports.com/rss/11095"
         }
         self.transfer_keywords = [
             'transfer', 'signing', 'signed', 'deal', 'bid', 'contract', 
-            'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed'
+            'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed', 'arsenal'
         ]
 
     def _is_relevant(self, entry, source_name):
         """Checks if an article is a relevant Arsenal transfer story."""
         content_lower = (entry.title + entry.summary).lower()
 
-        has_transfer_keyword = any(keyword in content_lower for keyword in self.transfer_keywords)
-        
-        # For general feeds, we need both "arsenal" and a transfer keyword.
-        if source_name in ["Fabrizio Romano", "David Ornstein"]:
-            return 'arsenal' in content_lower and has_transfer_keyword
-            
-        # For the dedicated Arsenal feed, we only need a transfer keyword.
-        if source_name == "Sky Sports":
-            return has_transfer_keyword
-            
-        return False
+        # For these general football feeds, we must find "arsenal"
+        if 'arsenal' not in content_lower:
+            return False
+
+        # And at least one transfer-related keyword
+        return any(keyword in content_lower for keyword in self.transfer_keywords)
 
     async def _scrape_feed(self, source_name, url):
         """Parses a single RSS feed and returns a list of relevant articles."""
