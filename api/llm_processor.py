@@ -45,8 +45,14 @@ async def process_with_llm(articles, api_key):
             response.raise_for_status()
             
             # Extract the JSON content from the LLM's response
-            llm_response_content = response.json()['choices'][0]['message']['content']
+            llm_response_content = response.json()['choices'][0]['message']['content'].strip()
             
+            # Clean the response: remove markdown fences if they exist
+            if llm_response_content.startswith("```json"):
+                llm_response_content = llm_response_content[7:].strip()
+            if llm_response_content.endswith("```"):
+                llm_response_content = llm_response_content[:-3].strip()
+
             # The LLM should return a JSON string, so we parse it
             processed_articles = json.loads(llm_response_content)
 
