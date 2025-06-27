@@ -10,8 +10,8 @@ class NewsScraper:
     """
     def __init__(self):
         self.feeds = {
-            "Fabrizio Romano": "https://nitter.net/FabrizioRomano/rss",
-            "David Ornstein": "https://nitter.net/David_Ornstein/rss",
+            "Fabrizio Romano": "https://nitter.cz/FabrizioRomano/rss",
+            "David Ornstein": "https://nitter.cz/David_Ornstein/rss",
             "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml",
             "Sky Sports": "https://www.skysports.com/rss/11095"
         }
@@ -75,13 +75,6 @@ class NewsScraper:
         try:
             user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             feed = feedparser.parse(url, agent=user_agent)
-
-            # --- TEMPORARY DEBUGGING ---
-            if source_name in ["Fabrizio Romano", "David Ornstein"]:
-                print(f"  [DEBUG] Raw tweet titles from {source_name}:")
-                for entry in feed.entries:
-                    print(f"    - {entry.title}")
-            # --- END DEBUGGING ---
 
             for entry in feed.entries:
                 if self._is_relevant(entry, source_name):
