@@ -194,4 +194,7 @@ const fetchRumors = async () => {
 - Test frontend responsiveness across devices
 - Implement end-to-end testing for critical user flows
 
+## Git push
+- Always provide Git add, commit and push commands after each reply
+
 Remember: This is a transfer rumors website focused on Arsenal FC. Prioritize real-time data accuracy, user experience, and maintaining the retro aesthetic while ensuring modern web standards and accessibility.

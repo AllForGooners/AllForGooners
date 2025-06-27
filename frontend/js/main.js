@@ -149,10 +149,8 @@ class AllForGooners {
                         <div class="news-summary">${summary}</div>
                     </div>
                     <div class="news-card__footer">
-                        <div class="news-footer">
+                        <div class="news-card__source-info">
                             <span class="source-text">${source}</span>
-                        </div>
-                        <div class="news-links">
                             <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
                                 ${buttonIcon}${buttonLabel}
                             </a>

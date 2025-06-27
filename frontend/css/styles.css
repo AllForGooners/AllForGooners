@@ -258,7 +258,7 @@ body {
 @media (min-width: 1200px) {
     .grid-container {
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        padding: 2rem;
+        padding: 0; /* Remove padding to align with hero section */
     }
 }
 
@@ -316,6 +316,17 @@ body {
     margin-top: auto;
     padding-top: var(--spacing-sm);
     border-top: 1px solid #555;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.news-card__source-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .news-headline {
@@ -530,6 +541,15 @@ body {
 
 /* ========== FILTERS & MODALS ========== */
 /* Filter Components */
+.filter-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-md);
+}
+
 .filter-toggle-btn {
     position: static;
     background: var(--arsenal-red);
@@ -545,8 +565,6 @@ body {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    margin-left: auto;
-    margin-top: var(--spacing-md);
 }
 
 .filter-toggle-btn:hover {
