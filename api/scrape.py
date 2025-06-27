@@ -4,7 +4,6 @@ import asyncio
 from datetime import datetime, timezone
 from supabase import create_client, Client
 from newsscraper import NewsScraper
-from twitterscraper import TwitterScraper
 from llm_processor import process_with_llm
 
 # --- CONFIGURATION ---
@@ -17,19 +16,10 @@ async def main():
     # 1. Initialize Supabase client
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-    # 2. Scrape News and Twitter
+    # 2. Scrape News from RSS Feeds
     news_scraper = NewsScraper()
-    twitter_scraper = TwitterScraper()
-
-    # Run scrapers in parallel
-    scraped_news_task = asyncio.create_task(news_scraper.scrape_all())
-    scraped_tweets_task = asyncio.create_task(twitter_scraper.scrape_all())
-
-    raw_news = await scraped_news_task
-    raw_tweets = await scraped_tweets_task
+    raw_articles = await news_scraper.scrape_all()
     
-    # Combine raw data
-    raw_articles = raw_news + raw_tweets
     print(f"Scraped a total of {len(raw_articles)} raw articles/tweets.")
 
     if not raw_articles:

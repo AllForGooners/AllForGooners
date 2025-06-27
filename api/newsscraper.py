@@ -1,72 +1,61 @@
+import feedparser
 import asyncio
-from playwright.async_api import async_playwright
-from bs4 import BeautifulSoup
-import time
 
 class NewsScraper:
-    """Scrapes news websites for Arsenal transfer rumors using Playwright."""
-
+    """
+    Scrapes Arsenal news from various RSS feeds.
+    This is more reliable than direct web scraping as it uses official feeds.
+    """
     def __init__(self):
-        self.news_sources = {
-            'sky_sports': {
-                'url': 'https://www.skysports.com/arsenal-news',
-                'parser': self._parse_sky_sports
-            },
-            # Add other news sources here
+        self.feeds = {
+            "Fabrizio Romano": "https://rss.app/feed/7p2MgxJ88tQ3V35q",
+            "David Ornstein": "https://rss.app/feed/Glfiywdo14rqxTEm",
+            "Sky Sports": "https://www.skysports.com/rss/football/teams/arsenal"
         }
 
-    async def _fetch_page_content(self, url):
-        """Fetches page content using Playwright to handle dynamic sites."""
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            try:
-                await page.goto(url, timeout=60000, wait_until='domcontentloaded')
-                # Optional: Add logic to handle cookie banners if they block content
-                await page.wait_for_timeout(3000)  # Wait for any lazy-loaded content
-                content = await page.content()
-                return content
-            finally:
-                await browser.close()
-
-    async def _parse_sky_sports(self, html, config):
-        """Parses the HTML content from Sky Sports."""
-        soup = BeautifulSoup(html, 'html.parser')
-        rumors = []
-        for a in soup.select("a.sdc-site-tile__headline-link"):
-            headline = a.get_text(strip=True)
-            url = a["href"]
-            if not url.startswith("http"):
-                url = f"https://www.skysports.com{url}"
+    async def _scrape_feed(self, source_name, url):
+        """Parses a single RSS feed and returns a list of articles."""
+        print(f"Scraping {source_name} from {url}...")
+        articles = []
+        try:
+            # feedparser can handle both remote URLs and local file paths
+            feed = feedparser.parse(url)
             
-            rumors.append({
-                "headline": headline,
-                "source_name": "Sky Sports",
-                "url": url,
-                "content": "" # We'll let the LLM generate content from the article
-            })
-        print(f"Found {len(rumors)} potential rumors from Sky Sports.")
-        return rumors
+            for entry in feed.entries:
+                # We only want entries related to Arsenal transfers
+                content_lower = (entry.title + entry.summary).lower()
+                if 'arsenal' in content_lower and 'transfer' in content_lower:
+                    articles.append({
+                        "headline": entry.title,
+                        "source_name": source_name,
+                        "url": entry.link,
+                        "content": entry.summary,
+                    })
+        except Exception as e:
+            print(f"Error scraping feed {source_name}: {e}")
 
-    async def scrape_source(self, source_name):
-        """Scrapes a single news source."""
-        config = self.news_sources[source_name]
-        print(f"Scraping {source_name} from {config['url']}...")
-        html = await self._fetch_page_content(config['url'])
-        if html:
-            return await config['parser'](html, config)
-        return []
+        print(f"Found {len(articles)} potential rumors from {source_name}.")
+        return articles
 
     async def scrape_all(self):
-        """Scrapes all configured news sources in parallel."""
-        tasks = [self.scrape_source(name) for name in self.news_sources]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        """Scrapes all configured RSS feeds in parallel."""
+        tasks = []
+        for source_name, url in self.feeds.items():
+            tasks.append(self._scrape_feed(source_name, url))
         
-        all_rumors = []
-        for res in results:
-            if isinstance(res, list):
-                all_rumors.extend(res)
-            elif isinstance(res, Exception):
-                print(f"Error scraping a source: {res}")
+        results = await asyncio.gather(*tasks)
         
-        return all_rumors 
+        # Flatten the list of lists into a single list of articles
+        all_articles = [article for result in results for article in result]
+        return all_articles
+
+if __name__ == '__main__':
+    # Example of how to run the scraper for testing
+    async def test_scraper():
+        scraper = NewsScraper()
+        articles = await scraper.scrape_all()
+        print(f"\n--- Total Articles Found: {len(articles)} ---")
+        for article in articles:
+            print(f"  - [{article['source_name']}] {article['headline']}")
+    
+    asyncio.run(test_scraper()) 

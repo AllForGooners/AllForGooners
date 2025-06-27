@@ -1,7 +1,6 @@
 # Scraping
 beautifulsoup4
-playwright
-twscrape
+feedparser
 
 # API & DB Clients
 httpx
