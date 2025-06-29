@@ -138,8 +138,10 @@ class AllForGooners {
                         <h2 class="news-headline">${article.headline}</h2>
                         <p class="news-summary">${article.news_summary || ''}</p>
                         <div class="news-footer">
-                            <span class="news-meta">${article.source_name}</span>
-                            ${buttonHtml}
+                            <div class="news-card__source-info">
+                                <span class="source-text">${article.source_name}</span>
+                                ${buttonHtml}
+                            </div>
                             <span class="news-meta">${this.timeAgo(article.published_at)}</span>
                         </div>
                     </div>
@@ -178,8 +180,10 @@ class AllForGooners {
                 <h2 class="news-headline">${article.headline}</h2>
                 <p class="news-summary">${article.news_summary}</p>
                 <div class="news-footer">
-                    <span class="news-meta">${article.source_name}</span>
-                    ${buttonHtml}
+                    <div class="news-card__source-info">
+                        <span class="source-text">${article.source_name}</span>
+                        ${buttonHtml}
+                    </div>
                     <span class="news-meta">${this.timeAgo(article.published_at)}</span>
                 </div>
             </div>
