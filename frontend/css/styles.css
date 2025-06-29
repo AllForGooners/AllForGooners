@@ -329,12 +329,45 @@ body {
     flex-wrap: wrap;
 }
 
+.news-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    /* Add a separator line below the headline */
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+
+    /* Clamp headline to 3 lines */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 84px; /* 1.4rem * 1.2 line-height * 3 lines + a bit of buffer */
+}
+
+.news-card p {
+    flex-grow: 1;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
 .news-headline {
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--arsenal-white);
-    margin-bottom: var(--spacing-sm);
     line-height: 1.4;
+    /* Add a separator line below the headline */
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color, #444); /* Fallback color */
+
+    /* Clamp headline to 3 lines */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 5.46em; /* 1.3rem * 1.4 line-height * 3 lines */
 }
 
 .news-image {
@@ -348,6 +381,7 @@ body {
 .news-summary {
     color: #ddd;
     line-height: 1.5;
+    margin-top: 0.75rem; /* Add top margin for spacing */
     margin-bottom: var(--spacing-sm);
 }
 
@@ -879,32 +913,43 @@ body {
 }
 
 /* X (Twitter) button style */
-.x-link {
+.x-link:hover, .read-article-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.read-article-btn {
+    background-color: var(--arsenal-red);
+    color: var(--arsenal-white);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 4px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: 1px solid #000;
-    background: #000;
-    color: #fff !important;
-    font-family: var(--body-font);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    justify-content: center;
 }
-.x-link:hover {
-    background: #222;
+
+.x-link {
+    background-color: #000;
     color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 4px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #555;
 }
+
 .x-logo {
     height: 1em;
     width: 1em;
-    vertical-align: middle;
+    margin-right: var(--spacing-xs);
+    filter: invert(1); /* Makes the SVG white */
 }
 
 .source-text {
@@ -980,4 +1025,14 @@ body {
     font-weight: bold;
     animation: pulse 2s infinite;
     font-family: var(--body-font);
+}
+
+.news-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
 }

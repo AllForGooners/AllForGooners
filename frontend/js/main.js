@@ -116,52 +116,89 @@ class AllForGooners {
         });
         const dedupedList = Object.values(deduped);
 
-        gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
+        gridContainer.innerHTML = dedupedList.map(article => {
+            const isTwitterSource = article.source_name === 'Fabrizio Romano' || article.source_name === 'David Ornstein';
+            const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
+            
+            let buttonHtml;
+            if (isTwitterSource) {
+                buttonHtml = `
+                    <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="x-link">
+                        <img src="images/X_logo.svg" alt="X Logo" class="x-logo"> View on X
+                    </a>
+                `;
+            } else {
+                buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="read-article-btn">Read Article</a>`;
+            }
+
+            return `
+                <div class="news-card">
+                    <img src="${imageUrl}" alt="${article.headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
+                    <div class="news-content">
+                        <h2 class="news-headline">${article.headline}</h2>
+                        <p class="news-summary">${article.news_summary || ''}</p>
+                        <div class="news-footer">
+                            <span class="news-meta">${article.source_name}</span>
+                            ${buttonHtml}
+                            <span class="news-meta">${this.timeAgo(article.published_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
         // Add intersection observer for animations
         this.observeNewsCards();
     }
 
-    createNewsCard(item) {
-        // Use headline as the main headline
-        console.log('Rendering card for:', item);
-        const headline = item.headline || 'All For Gooners';
-        const source = item.source_name || 'Unknown';
-        const url = item.url || '#';
-        const image = item.image_url ? `<img src="${item.image_url}" alt="${headline}" class="news-image">` : '';
-        const summary = item.news_summary || '';
-        const publishedAt = item.published_at ? this.formatTimeAgo(item.published_at) : '';
-        const buttonLabel = (source.toLowerCase().includes('twitter') || source.toLowerCase().includes('x'))
-            ? 'View on X'
-            : 'Read Article';
-        const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
-        const buttonIcon = buttonLabel === 'View on X'
-            ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
-            : '📰 ';
-    
-        return `
-            <div class="news-card" data-news-id="${item.id || url}">
-                <div class="news-card__content">
-                    <div class="news-card__header">
-                        <h3 class="news-headline">${headline}</h3>
-                        ${image}
-                    </div>
-                    <div class="news-card__body">
-                        <div class="news-summary">${summary}</div>
-                    </div>
-                    <div class="news-card__footer">
-                        <div class="news-card__source-info">
-                            <span class="source-text">${source}</span>
-                            <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
-                                ${buttonIcon}${buttonLabel}
-                            </a>
-                        </div>
-                        <div class="news-meta">
-                            <span class="time-ago">${publishedAt}</span>
-                        </div>
-                    </div>
+    createNewsCard(article) {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+
+        // Determine if the source is from Twitter
+        const isTwitterSource = article.source_name === 'Fabrizio Romano' || article.source_name === 'David Ornstein';
+
+        // Set the image for the card
+        const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
+
+        // Create the button based on the source
+        let buttonHtml;
+        if (isTwitterSource) {
+            buttonHtml = `
+                <a href="${article.url}" target="_blank" class="x-link">
+                    <img src="images/X_logo.svg" alt="X Logo" class="x-logo">
+                    <span class="source-text">View on X</span>
+                </a>
+            `;
+        } else {
+            buttonHtml = `<a href="${article.url}" target="_blank" class="read-article-btn">Read Article</a>`;
+        }
+
+        card.innerHTML = `
+            <img src="${imageUrl}" alt="${article.headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
+            <div class="news-content">
+                <h2 class="news-headline">${article.headline}</h2>
+                <p class="news-summary">${article.news_summary}</p>
+                <div class="news-footer">
+                    <span class="news-meta">${article.source_name}</span>
+                    ${buttonHtml}
+                    <span class="news-meta">${this.timeAgo(article.published_at)}</span>
                 </div>
             </div>
         `;
+        return card;
+    }
+
+    // Function to calculate time ago
+    timeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) return 'Just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}h ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        return date.toLocaleDateString();
     }
 
     getRumorStrengthLabel(strength) {
@@ -403,18 +440,6 @@ class AllForGooners {
         document.head.appendChild(style);
     }
 
-    formatTimeAgo(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-
-        if (diffInSeconds < 60) return 'Just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}h ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-        return date.toLocaleDateString();
-    }
-
     // Utility methods for enhanced functionality
     shareNews(newsId) {
         const news = this.transferData.find(r => r.id === newsId);
@@ -460,10 +485,10 @@ class AllForGooners {
         }, 100);
         setTimeout(() => {
             notification.classList.remove('rumors__notification--show');
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
             }, 300);
         }, 3000);
     }

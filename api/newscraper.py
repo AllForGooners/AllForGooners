@@ -1,84 +1,168 @@
-import feedparser
 import asyncio
+import os
 import re
+from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
+from twikit import Client
+import feedparser
 from bs4 import BeautifulSoup, Tag
 
 class NewsScraper:
     """
-    Scrapes Arsenal news from various RSS feeds.
-    This is more reliable than direct web scraping as it uses official feeds.
+    Scrapes Arsenal news from various sources, including Twitter and RSS feeds.
     """
     def __init__(self):
-        self.feeds = {
-            "Fabrizio Romano": "https://xcancel.com/FabrizioRomano/rss",
-            "David Ornstein": "https://xcancel.com/David_Ornstein/rss",
+        self.journalists = ["FabrizioRomano", "David_Ornstein"]
+        self.rss_feeds = {
             "BBC Sport": "http://feeds.bbci.co.uk/sport/football/rss.xml",
             "Sky Sports": "https://www.skysports.com/rss/11095"
         }
+        self.client = Client('en-US')
+        # This list is essential for the RSS scraper to find general transfer news
         self.transfer_keywords = [
             'transfer', 'signing', 'signed', 'deal', 'bid', 'contract', 
-            'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed'
+            'talks', 'move', 'rumour', 'loan', 'join', 'fee agreed', 'here we go',
+            '$', '€', '£', 'agree', 'sign'
         ]
 
-    def _get_image_from_entry(self, entry):
+    async def _login(self):
+        """Logs into Twitter using credentials from environment variables."""
+        if os.path.exists('cookies.json'):
+            self.client.load_cookies('cookies.json')
+            print("Successfully loaded cookies.")
+        else:
+            print("No cookie file found. Logging in with credentials...")
+            load_dotenv()
+            username = os.getenv("TWITTER_USERNAME")
+            email = os.getenv("TWITTER_EMAIL")
+            password = os.getenv("TWITTER_PASSWORD")
+
+            # Assert that credentials are not None to satisfy the linter
+            assert username is not None, "TWITTER_USERNAME not found in .env"
+            assert email is not None, "TWITTER_EMAIL not found in .env"
+            assert password is not None, "TWITTER_PASSWORD not found in .env"
+
+            await self.client.login(
+                auth_info_1=username,
+                auth_info_2=email,
+                password=password
+            )
+            self.client.save_cookies('cookies.json')
+            print("Successfully logged in and saved cookies for future use.")
+
+    def _get_image_from_tweet(self, tweet):
+        """Extracts an image URL from a tweet's media, if available."""
+        if tweet.media:
+            for media_item in tweet.media:
+                # The media_item can be a Photo or Video object
+                if hasattr(media_item, 'type') and media_item.type == 'photo':
+                    # The correct attribute is 'media_url_https'
+                    if hasattr(media_item, 'media_url_https'):
+                        return media_item.media_url_https
+        return None
+
+    def _is_relevant_tweet(self, tweet):
+        """Checks if a tweet is a relevant Arsenal story."""
+        # We don't care about replies
+        if tweet.reply_to:
+            return False
+            
+        content_lower = (tweet.full_text).lower()
+        is_arsenal_related = 'arsenal' in content_lower or '#afc' in content_lower
+        
+        # The scraper's only job is to find articles mentioning Arsenal.
+        # The LLM will handle filtering for transfer-specific news.
+        return is_arsenal_related
+
+    async def _scrape_twitter_user(self, username):
+        """Fetches and processes recent tweets for a single user."""
+        print(f"Scraping tweets for {username}...")
+        articles = []
+        # Look back 7 days to have a better chance of finding relevant test tweets
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        try:
+            user = await self.client.get_user_by_screen_name(username)
+            # Fetch more tweets to ensure we see the history of very active users
+            tweets = await user.get_tweets('Tweets', count=250) 
+            
+            for tweet in tweets:
+                # Stop if tweets are older than the time window
+                if tweet.created_at_datetime < seven_days_ago:
+                    break
+
+                if self._is_relevant_tweet(tweet):
+                    image_url = self._get_image_from_tweet(tweet)
+                    articles.append({
+                        "headline": tweet.full_text,
+                        "source_name": user.name,
+                        "url": f"https://x.com/{user.screen_name}/status/{tweet.id}",
+                        "content": tweet.full_text,
+                        "image_url": image_url
+                    })
+        except Exception as e:
+            print(f"Error scraping user {username}: {e}")
+        
+        print(f"Found {len(articles)} potential rumors from {username}.")
+        return articles
+
+    # --- RSS Feed Methods ---
+
+    def _get_image_from_rss_entry(self, entry):
         """Attempts to find an image URL from various places in an RSS entry."""
         image_url = None
-        # Check for media_content (most common for modern feeds)
+        # 1. Check for media_content (most reliable)
         if hasattr(entry, 'media_content') and entry.media_content:
             for media in entry.media_content:
                 if media.get('medium') == 'image' and media.get('url'):
                     image_url = media.get('url')
                     break
-        
-        # Check for media_thumbnail as a fallback
+        # 2. Check for enclosures (another common pattern)
+        if not image_url and hasattr(entry, 'enclosures') and entry.enclosures:
+             for enclosure in entry.enclosures:
+                if enclosure.get('type', '').startswith('image/'):
+                    image_url = enclosure.get('href')
+                    break
+        # 3. Check for media_thumbnail
         if not image_url and hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
             image_url = entry.media_thumbnail[0].get('url')
-
-        # As a last resort, parse the summary HTML for an <img> tag
+        # 4. Fallback to parsing the summary HTML
         if not image_url and hasattr(entry, 'summary'):
             soup = BeautifulSoup(entry.summary, 'html.parser')
             img_tag = soup.find('img')
             if isinstance(img_tag, Tag) and img_tag.get('src'):
                 image_url = img_tag.get('src')
-
-        # If we found a BBC image, try to get a higher resolution version
+        # 5. Clean up BBC image URLs to get a higher resolution
         if image_url and isinstance(image_url, str) and 'bbci.co.uk' in image_url:
             try:
-                # e.g., .../cps/480/... becomes .../cps/976/...
-                image_url = re.sub(r'/cps/\\d+/', '/cps/976/', image_url)
+                # Use a more generic regex to handle different image sizes
+                image_url = re.sub(r'/cps/\\d+/', '/cps/800/', image_url)
             except Exception:
-                pass # If regex fails, use the original URL
-                
+                pass
         return image_url
 
-    def _is_relevant(self, entry, source_name):
-        """Checks if an article is a relevant Arsenal transfer story."""
-        content_lower = (entry.title + entry.summary).lower()
+    def _is_relevant_rss_entry(self, entry):
+        """
+        Checks if an RSS article is a relevant Arsenal transfer story.
+        An article is relevant if it's about Arsenal OR it's a general transfer story.
+        """
+        content_lower = (entry.title + " " + entry.summary).lower()
+        is_arsenal_related = 'arsenal' in content_lower
+        has_transfer_keyword = any(keyword in content_lower for keyword in self.transfer_keywords)
+        
+        # We let the LLM do the final filtering, so we cast a wider net here.
+        return is_arsenal_related or has_transfer_keyword
 
-        # For journalists, we are more lenient and check for "arsenal" or "#afc"
-        if source_name in ["Fabrizio Romano", "David Ornstein"]:
-            is_relevant_tweet = 'arsenal' in content_lower or '#afc' in content_lower
-            if is_relevant_tweet:
-                print(f"[DEBUG] Found relevant tweet from {source_name}: {entry.title}")
-            return is_relevant_tweet
-
-        # For news sites, we need "arsenal" AND a transfer keyword
-        if 'arsenal' in content_lower:
-            return any(keyword in content_lower for keyword in self.transfer_keywords)
-            
-        return False
-
-    async def _scrape_feed(self, source_name, url):
+    def _scrape_rss_feed(self, source_name, url):
         """Parses a single RSS feed and returns a list of relevant articles."""
         print(f"Scraping {source_name} from {url}...")
         articles = []
         try:
-            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            user_agent = "AllForGooners/1.0 (RSSScraper; +https://all-for-gooners.vercel.app/)"
             feed = feedparser.parse(url, agent=user_agent)
 
             for entry in feed.entries:
-                if self._is_relevant(entry, source_name):
-                    image_url = self._get_image_from_entry(entry)
+                if self._is_relevant_rss_entry(entry):
+                    image_url = self._get_image_from_rss_entry(entry)
                     articles.append({
                         "headline": entry.title,
                         "source_name": source_name,
@@ -88,15 +172,30 @@ class NewsScraper:
                     })
         except Exception as e:
             print(f"Error scraping feed {source_name}: {e}")
-
+        
         print(f"Found {len(articles)} potential rumors from {source_name}.")
         return articles
 
+    # --- Main Scraper Method ---
     async def scrape_all(self):
-        """Scrapes all feeds and returns a list of all relevant articles."""
-        all_articles = []
-        # Loop through feeds sequentially to ensure all are processed and logged.
-        for source_name, url in self.feeds.items():
-            articles = await self._scrape_feed(source_name, url)
-            all_articles.extend(articles)
-        return all_articles 
+        """Logs in, scrapes all sources (Twitter and RSS), and returns combined articles."""
+        # Scrape Twitter
+        await self._login()
+        twitter_articles = []
+        for username in self.journalists:
+            articles = await self._scrape_twitter_user(username)
+            twitter_articles.extend(articles)
+        print("Finished scraping Twitter feeds.")
+
+        # Scrape RSS Feeds
+        rss_articles = []
+        for source_name, url in self.rss_feeds.items():
+            # Running in a separate thread to avoid blocking asyncio event loop
+            loop = asyncio.get_running_loop()
+            articles = await loop.run_in_executor(
+                None, self._scrape_rss_feed, source_name, url
+            )
+            rss_articles.extend(articles)
+        print("Finished scraping RSS feeds.")
+        
+        return twitter_articles + rss_articles 
