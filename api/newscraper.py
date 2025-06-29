@@ -58,7 +58,14 @@ class NewsScraper:
                 if hasattr(media_item, 'type') and media_item.type == 'photo':
                     # The correct attribute is 'media_url_https'
                     if hasattr(media_item, 'media_url_https'):
-                        return media_item.media_url_https
+                        # Get the highest quality image by removing size parameters
+                        image_url = media_item.media_url_https
+                        # Remove Twitter image size parameters to get original size
+                        if '?' in image_url:
+                            image_url = image_url.split('?')[0]
+                        # Add parameter for highest quality
+                        image_url = f"{image_url}?format=jpg&name=large"
+                        return image_url
         return None
 
     def _is_relevant_tweet(self, tweet):
@@ -70,9 +77,12 @@ class NewsScraper:
         content_lower = (tweet.full_text).lower()
         is_arsenal_related = 'arsenal' in content_lower or '#afc' in content_lower
         
-        # The scraper's only job is to find articles mentioning Arsenal.
-        # The LLM will handle filtering for transfer-specific news.
-        return is_arsenal_related
+        # Check for transfer keywords to improve relevance
+        transfer_keywords = ['transfer', 'sign', 'deal', 'bid', 'contract', 'talks', 'move']
+        has_transfer_keyword = any(keyword in content_lower for keyword in transfer_keywords)
+        
+        # Prioritize tweets that have both Arsenal and transfer keywords
+        return is_arsenal_related and has_transfer_keyword
 
     async def _scrape_twitter_user(self, username):
         """Fetches and processes recent tweets for a single user."""
@@ -135,7 +145,15 @@ class NewsScraper:
         if image_url and isinstance(image_url, str) and 'bbci.co.uk' in image_url:
             try:
                 # Use a more generic regex to handle different image sizes
-                image_url = re.sub(r'/cps/\\d+/', '/cps/800/', image_url)
+                image_url = re.sub(r'/cps/\d+/', '/cps/800/', image_url)
+            except Exception:
+                pass
+        # 6. Handle Sky Sports images to get higher resolution
+        if image_url and isinstance(image_url, str) and 'skysports' in image_url:
+            try:
+                # For Sky Sports, try to get the highest quality version
+                if 'e=XXXLARGE' not in image_url:
+                    image_url = re.sub(r'e=\w+', 'e=XXXLARGE', image_url)
             except Exception:
                 pass
         return image_url

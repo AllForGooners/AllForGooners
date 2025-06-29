@@ -116,79 +116,45 @@ class AllForGooners {
         });
         const dedupedList = Object.values(deduped);
 
-        gridContainer.innerHTML = dedupedList.map(article => {
-            const isTwitterSource = article.source_name === 'Fabrizio Romano' || article.source_name === 'David Ornstein';
-            const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
-            
-            let buttonHtml;
-            const buttonLabel = isTwitterSource ? 'View on X' : 'Read Article';
-            const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
-            const buttonIcon = buttonLabel === 'View on X'
-                ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
-                : '📰 ';
-                
-            buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
-                ${buttonIcon}${buttonLabel}
-            </a>`;
-
-            return `
-                <div class="news-card">
-                    <img src="${imageUrl}" alt="${article.headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
-                    <div class="news-content">
-                        <h2 class="news-headline">${article.headline}</h2>
-                        <p class="news-summary">${article.news_summary || ''}</p>
-                        <div class="news-footer">
-                            <div class="news-card__source-info">
-                                <span class="source-text">${article.source_name}</span>
-                                ${buttonHtml}
-                            </div>
-                            <span class="news-meta">${this.timeAgo(article.published_at)}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
         // Add intersection observer for animations
         this.observeNewsCards();
     }
 
     createNewsCard(article) {
-        const card = document.createElement('div');
-        card.className = 'news-card';
-
-        // Determine if the source is from Twitter
-        const isTwitterSource = article.source_name === 'Fabrizio Romano' || article.source_name === 'David Ornstein';
-
-        // Set the image for the card
+        // Use headline as the main headline
+        console.log('Rendering card for:', article);
+        const headline = article.headline || 'All For Gooners';
+        const source = article.source_name || 'Unknown';
+        const url = article.url || '#';
         const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
-
-        // Create the button based on the source
-        let buttonHtml;
+        const summary = article.news_summary || '';
+        const publishedAt = article.published_at ? this.timeAgo(article.published_at) : '';
+        const isTwitterSource = source === 'Fabrizio Romano' || source === 'David Ornstein';
         const buttonLabel = isTwitterSource ? 'View on X' : 'Read Article';
         const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
         const buttonIcon = buttonLabel === 'View on X'
             ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
             : '📰 ';
-            
-        buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
-            ${buttonIcon}${buttonLabel}
-        </a>`;
-
-        card.innerHTML = `
-            <img src="${imageUrl}" alt="${article.headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
-            <div class="news-content">
-                <h2 class="news-headline">${article.headline}</h2>
-                <p class="news-summary">${article.news_summary}</p>
-                <div class="news-footer">
-                    <div class="news-card__source-info">
-                        <span class="source-text">${article.source_name}</span>
-                        ${buttonHtml}
+    
+        return `
+            <div class="news-card" data-news-id="${article.id || url}">
+                <div class="news-content">
+                    <h2 class="news-headline">${headline}</h2>
+                    <img src="${imageUrl}" alt="${headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
+                    <p class="news-summary">${summary}</p>
+                    <div class="news-footer">
+                        <div class="news-card__source-info">
+                            <span class="source-text">${source}</span>
+                            <a href="${url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
+                                ${buttonIcon}${buttonLabel}
+                            </a>
+                        </div>
+                        <span class="news-meta">${publishedAt}</span>
                     </div>
-                    <span class="news-meta">${this.timeAgo(article.published_at)}</span>
                 </div>
             </div>
         `;
-        return card;
     }
 
     // Function to calculate time ago

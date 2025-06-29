@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import httpx
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -12,6 +13,65 @@ load_dotenv() # Load environment variables from .env file
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY")
+
+# --- IMAGE SEARCH FUNCTION ---
+async def search_player_image(player_name):
+    """
+    Searches for a player image using SerpAPI as a fallback if scraped images are not good.
+    Returns the URL of the first image result.
+    """
+    if not SERPAPI_API_KEY:
+        print("SERPAPI_API_KEY not found in environment variables. Skipping image search.")
+        return None
+        
+    try:
+        search_query = f"{player_name} arsenal football player"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://serpapi.com/search.json",
+                params={
+                    "q": search_query,
+                    "tbm": "isch",  # Image search
+                    "api_key": SERPAPI_API_KEY
+                },
+                timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            # Extract the first image URL
+            if "images_results" in data and len(data["images_results"]) > 0:
+                return data["images_results"][0]["original"]
+            return None
+    except Exception as e:
+        print(f"Error searching for player image: {e}")
+        return None
+
+# --- ENHANCE ARTICLES WITH BETTER IMAGES ---
+async def enhance_articles_with_images(processed_articles):
+    """
+    Enhances articles by searching for better player images when needed.
+    """
+    enhanced_articles = []
+    
+    for article in processed_articles:
+        # If the article has no image or player name, skip enhancement
+        if not article.get("player_name"):
+            enhanced_articles.append(article)
+            continue
+            
+        # If the article has no image, search for one
+        if not article.get("image_url"):
+            print(f"Searching for image for {article['player_name']}...")
+            image_url = await search_player_image(article["player_name"])
+            if image_url:
+                article["image_url"] = image_url
+                print(f"Found image for {article['player_name']}")
+        
+        enhanced_articles.append(article)
+    
+    return enhanced_articles
 
 # --- ASYNC MAIN ---
 async def main():
@@ -53,13 +113,17 @@ async def main():
     processed_articles = await process_with_llm(new_articles, OPENROUTER_API_KEY)
     print(f"LLM processing complete. {len(processed_articles)} articles ready for insertion.")
 
-    # 5. Save to Supabase
-    if processed_articles:
+    # 5. Enhance articles with better images
+    enhanced_articles = await enhance_articles_with_images(processed_articles)
+    print(f"Enhanced {len(enhanced_articles)} articles with better images.")
+
+    # 6. Save to Supabase
+    if enhanced_articles:
         print("Saving processed articles to Supabase...")
         try:
             # 'upsert' will insert new rows or update existing ones if the headline matches
             data, count = supabase.table('transfer_news').upsert(
-                processed_articles, 
+                enhanced_articles, 
                 on_conflict='headline'
             ).execute()
             print(f"Successfully upserted {len(data[1])} articles into Supabase.")
