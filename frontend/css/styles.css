@@ -343,22 +343,22 @@ body {
 .news-card__source-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-sm);
     flex-wrap: wrap;
 }
 
 .source-text {
-    font-size: 0.9rem;
-    color: #888;
-    font-weight: normal;
+    background: none !important;
+    color: inherit !important;
+    font-weight: 600;
     padding: 0;
     border: none;
-    background: none;
 }
 
 .news-meta {
     font-size: 0.9rem;
     color: #888;
+    font-weight: normal;
 }
 
 .source-link {
@@ -742,13 +742,4 @@ body {
     height: 1em;
     width: 1em;
     vertical-align: middle;
-}
-
-.source-text {
-    font-size: 0.9rem;
-    color: #888;
-    font-weight: normal;
-    padding: 0;
-    border: none;
-    background: none;
 }
