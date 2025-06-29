@@ -121,16 +121,15 @@ class AllForGooners {
             const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
             
             let buttonHtml;
-            if (isTwitterSource) {
-                buttonHtml = `
-                    <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="btn btn--twitter">
-                        <img src="images/X_logo.svg" alt="X Logo" class="btn__icon">
-                        <span>View on X</span>
-                    </a>
-                `;
-            } else {
-                buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="btn btn--website">Read Article</a>`;
-            }
+            const buttonLabel = isTwitterSource ? 'View on X' : 'Read Article';
+            const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
+            const buttonIcon = buttonLabel === 'View on X'
+                ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
+                : '📰 ';
+                
+            buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
+                ${buttonIcon}${buttonLabel}
+            </a>`;
 
             return `
                 <div class="news-card">
@@ -163,16 +162,15 @@ class AllForGooners {
 
         // Create the button based on the source
         let buttonHtml;
-        if (isTwitterSource) {
-            buttonHtml = `
-                <a href="${article.url}" target="_blank" class="x-link">
-                    <img src="images/X_logo.svg" alt="X Logo" class="x-logo">
-                    <span class="source-text">View on X</span>
-                </a>
-            `;
-        } else {
-            buttonHtml = `<a href="${article.url}" target="_blank" class="read-article-btn">Read Article</a>`;
-        }
+        const buttonLabel = isTwitterSource ? 'View on X' : 'Read Article';
+        const buttonClass = buttonLabel === 'View on X' ? 'x-link' : 'source-link';
+        const buttonIcon = buttonLabel === 'View on X'
+            ? `<img src="images/X_logo.svg" alt="X logo" class="x-logo">`
+            : '📰 ';
+            
+        buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="${buttonClass}">
+            ${buttonIcon}${buttonLabel}
+        </a>`;
 
         card.innerHTML = `
             <img src="${imageUrl}" alt="${article.headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">

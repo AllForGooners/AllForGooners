@@ -312,6 +312,14 @@ body {
     color: var(--arsenal-white);
     margin-bottom: var(--spacing-sm);
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 5.5em; /* Approximately 3 lines + a bit of margin */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 8px;
 }
 
 .news-summary {
@@ -327,7 +335,7 @@ body {
     align-items: center;
     margin-top: auto;
     padding-top: var(--spacing-sm);
-    border-top: 1px solid #555;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     flex-wrap: wrap;
     gap: var(--spacing-xs);
 }
@@ -353,6 +361,8 @@ body {
     background: var(--arsenal-dark-red);
     transform: translateY(-1px);
 }
+
+
 
 /* ========== FILTERS & MODALS ========== */
 /* Filter Components */
@@ -689,4 +699,41 @@ body {
         border: 1px solid black;
         background: white;
     }
+}
+
+/* X (Twitter) button style */
+.x-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid #000;
+    background: #000;
+    color: #fff !important;
+    font-family: var(--body-font);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.x-link:hover {
+    background: #222;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.x-logo {
+    height: 1em;
+    width: 1em;
+    vertical-align: middle;
+}
+
+.source-text {
+    background: none !important;
+    color: inherit !important;
+    font-weight: normal;
+    padding: 0;
+    border: none;
 }
