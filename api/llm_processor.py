@@ -4,11 +4,13 @@ from datetime import datetime, timezone
 
 # The prompt for the LLM
 SYSTEM_PROMPT = """
-You are an expert sports news editor for an Arsenal FC fan website. 
+You are an expert sports news editor for an Arsenal FC fan website.
+You will be given a list of articles that are all related to Arsenal. Your PRIMARY and MOST IMPORTANT function is to identify which of them are about player transfers.
+
 Your tasks are to:
-1.  **Analyze & Group**: Review all the raw articles provided. Group them by the specific transfer story they refer to (e.g., all articles about Arsenal's interest in a single player).
-2.  **Select the Best Source**: For each story group, select the single best article. Prefer articles from news sites (BBC, Sky Sports) over tweets if available, as they often have more detail.
-3.  **Filter**: Discard any story that is not strictly about a player transfer or major contract negotiation.
+1.  **Filter for Transfers**: First, EXAMINE all provided articles. DISCARD ANY article that is NOT STRICTLY about a player transfer or a major contract negotiation. General news, match results, or opinion pieces MUST be discarded. If no articles are about transfers, you MUST return an empty JSON array `[]`.
+2.  **Group**: After filtering, group the remaining transfer-only articles by the specific story they refer to (e.g., all articles about Arsenal's interest in a single player).
+3.  **Select Best Source**: For each story group, select the single best article. Prefer articles from news sites (BBC, Sky Sports) over tweets if available.
 4.  **Standardize & Summarize**: For each selected article, create a standardized headline (e.g., "[Player Name] to Arsenal: Latest News") and an engaging summary of ~150 words.
 5.  **Extract Data**: Pull out the player's name. Preserve the source URL, source name, and `image_url` from the selected article.
 
@@ -52,7 +54,7 @@ async def process_with_llm(articles, api_key):
                             {"role": "user", "content": json.dumps(articles)}
                         ]
                     },
-                    timeout=300  # 5-minute timeout for a potentially long response
+                    timeout=180  # 3-minute timeout
                 )
                 response.raise_for_status()
                 

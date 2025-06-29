@@ -2,11 +2,13 @@ import os
 import json
 import asyncio
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 from supabase import create_client, Client
 from newscraper import NewsScraper
 from llm_processor import process_with_llm
 
 # --- CONFIGURATION ---
+load_dotenv() # Load environment variables from .env file
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
@@ -14,6 +16,8 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 # --- ASYNC MAIN ---
 async def main():
     # 1. Initialize Supabase client
+    assert SUPABASE_URL, "SUPABASE_URL not found in environment variables."
+    assert SUPABASE_SERVICE_KEY, "SUPABASE_SERVICE_KEY not found in environment variables."
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
     # 2. Scrape News from RSS Feeds

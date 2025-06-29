@@ -123,12 +123,13 @@ class AllForGooners {
             let buttonHtml;
             if (isTwitterSource) {
                 buttonHtml = `
-                    <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="x-link">
-                        <img src="images/X_logo.svg" alt="X Logo" class="x-logo"> View on X
+                    <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="btn btn--twitter">
+                        <img src="images/X_logo.svg" alt="X Logo" class="btn__icon">
+                        <span>View on X</span>
                     </a>
                 `;
             } else {
-                buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="read-article-btn">Read Article</a>`;
+                buttonHtml = `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="btn btn--website">Read Article</a>`;
             }
 
             return `
