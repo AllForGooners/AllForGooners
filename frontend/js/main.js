@@ -127,33 +127,83 @@ class AllForGooners {
         const headline = article.headline || 'All For Gooners';
         const source = article.source_name || 'Unknown';
         const url = article.url || '#';
-        
-        // Player-specific image handling
-        let imageUrl = null;
         const playerName = article.player_name || '';
         
-        // First try to use the image_url from the article if it exists
-        if (article.image_url && article.image_url !== 'null' && article.image_url !== 'undefined') {
-            imageUrl = article.image_url;
-            console.log(`Using provided image for ${playerName}: ${imageUrl}`);
-        } else {
-            // If no image_url, use default Arsenal images based on player name
-            const defaultImages = [
-                'images/arsenal-logo.jpg',
-                'images/emirates-stadium.jpg',
-                'images/football-texture.jpg',
-                'images/stadium-atmosphere.jpeg',
-                'images/vintage-ball.jpg'
-            ];
+        // Direct player image mapping for better images
+        // This is a temporary solution until the backend image scraping is fixed
+        const playerImages = {
+            'Thomas Partey': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p167199.png',
+            'Christian Norgaard': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p221726.png',
+            'Cristhian Mosquera': 'https://img.a.transfermarkt.technology/portrait/big/669585-1661969181.jpg',
+            'Martin Odegaard': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p184029.png',
+            'Bukayo Saka': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p223340.png',
+            'Declan Rice': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p204480.png',
+            'Gabriel Jesus': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p205651.png',
+            'Kai Havertz': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p219847.png',
+            'Jurrien Timber': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p222692.png',
+            'Gabriel Martinelli': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p444145.png',
+            'Gabriel Magalhaes': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p226597.png',
+            'William Saliba': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p462424.png',
+            'Jorginho': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p85955.png',
+            'Aaron Ramsdale': 'https://resources.premierleague.com/premierleague/photos/players/250x250/p225321.png'
+        };
+        
+        // Default Arsenal images for fallback
+        const defaultImages = [
+            'images/arsenal-logo.jpg',
+            'images/emirates-stadium.jpg',
+            'images/football-texture.jpg',
+            'images/stadium-atmosphere.jpeg',
+            'images/vintage-ball.jpg'
+        ];
+        
+        // Image selection logic - prioritize direct player mapping
+        let imageUrl;
+        
+        // Check if we have a direct player image mapping
+        if (playerName && playerImages[playerName]) {
+            imageUrl = playerImages[playerName];
+            console.log(`Using mapped image for ${playerName}: ${imageUrl}`);
+        }
+        // Next try to find a partial match in player names
+        else if (playerName) {
+            const possibleMatches = Object.keys(playerImages).filter(name => 
+                playerName.includes(name) || name.includes(playerName));
             
-            // Use player name to determine which default image to use (simple hash function)
-            const hashString = playerName || headline;
+            if (possibleMatches.length > 0) {
+                imageUrl = playerImages[possibleMatches[0]];
+                console.log(`Using partial match image for ${playerName}: ${imageUrl}`);
+            }
+            // If no match, try the article image_url
+            else if (article.image_url && article.image_url !== 'null' && article.image_url !== 'undefined') {
+                imageUrl = article.image_url;
+                console.log(`Using provided image for ${playerName}: ${imageUrl}`);
+            }
+            // Last resort: use a default image
+            else {
+                const hashString = playerName || headline;
+                const imageIndex = Math.abs(hashString.split('').reduce((a, b) => {
+                    return a + b.charCodeAt(0);
+                }, 0) % defaultImages.length);
+                
+                imageUrl = defaultImages[imageIndex];
+                console.log(`Using default image for ${playerName}: ${imageUrl}`);
+            }
+        }
+        // If no player name, use article image or default
+        else if (article.image_url && article.image_url !== 'null' && article.image_url !== 'undefined') {
+            imageUrl = article.image_url;
+            console.log(`Using provided image: ${imageUrl}`);
+        }
+        // Last resort: use a default image
+        else {
+            const hashString = headline;
             const imageIndex = Math.abs(hashString.split('').reduce((a, b) => {
                 return a + b.charCodeAt(0);
             }, 0) % defaultImages.length);
             
             imageUrl = defaultImages[imageIndex];
-            console.log(`Using default image for ${playerName}: ${imageUrl}`);
+            console.log(`Using default image: ${imageUrl}`);
         }
         
         const summary = article.news_summary || '';

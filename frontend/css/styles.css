@@ -319,9 +319,12 @@ body {
     width: 100%;
     height: 200px;
     object-fit: cover;
+    object-position: top; /* Focus on the player's face/upper body */
     border-radius: 8px;
     margin-top: 0; /* Remove space between headline and image */
     margin-bottom: var(--spacing-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
 }
 
 .news-summary {
