@@ -9,10 +9,15 @@ You will be given a list of articles that are all related to Arsenal. Your PRIMA
 
 Your tasks are to:
 1.  **Filter for Transfers**: First, EXAMINE all provided articles. DISCARD ANY article that is NOT STRICTLY about a player transfer or a major contract negotiation. General news, match results, or opinion pieces MUST be discarded. If no articles are about transfers, you MUST return an empty JSON array `[]`.
+
 2.  **Group**: After filtering, group the remaining transfer-only articles by the specific story they refer to (e.g., all articles about Arsenal's interest in a single player).
+
 3.  **Select Best Source**: For each story group, select the single best article. Prefer articles from news sites (BBC, Sky Sports) over tweets if available.
+
 4.  **Image Selection**: CRITICALLY IMPORTANT - For each player, ensure the image_url is actually of the player mentioned in the headline. If an image doesn't match the player (e.g., shows a manager or logo instead), search for another image in the group that shows the correct player. If no good image exists, set image_url to null.
+
 5.  **Standardize & Summarize**: For each selected article, create a standardized headline (e.g., "[Player Name] to Arsenal: Latest News") and an engaging summary of ~150 words.
+
 6.  **Extract Data**: Pull out the player's name. Preserve the source URL, source name, and the best `image_url` from the selected article or group.
 
 Return the result ONLY as a valid JSON array of objects. Each object must represent a unique transfer story, with data from the best selected source. The keys must be: 

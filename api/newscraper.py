@@ -52,20 +52,29 @@ class NewsScraper:
 
     def _get_image_from_tweet(self, tweet):
         """Extracts an image URL from a tweet's media, if available."""
-        if tweet.media:
+        # First, try to get images from media attachments
+        if hasattr(tweet, 'media') and tweet.media:
             for media_item in tweet.media:
-                # The media_item can be a Photo or Video object
+                # Check for photo type media
                 if hasattr(media_item, 'type') and media_item.type == 'photo':
-                    # The correct attribute is 'media_url_https'
                     if hasattr(media_item, 'media_url_https'):
-                        # Get the highest quality image by removing size parameters
+                        # Get the highest quality image
                         image_url = media_item.media_url_https
-                        # Remove Twitter image size parameters to get original size
+                        # Remove size parameters for original size
                         if '?' in image_url:
                             image_url = image_url.split('?')[0]
-                        # Add parameter for highest quality
-                        image_url = f"{image_url}?format=jpg&name=large"
-                        return image_url
+                        return f"{image_url}?format=jpg&name=large"
+        
+        # If no media, try to extract from URLs in the tweet
+        if hasattr(tweet, 'urls') and tweet.urls:
+            for url_obj in tweet.urls:
+                # Check if the URL is an image
+                if hasattr(url_obj, 'expanded_url'):
+                    url = url_obj.expanded_url
+                    if any(ext in url.lower() for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+                        return url
+        
+        # If all else fails, return None
         return None
 
     def _is_relevant_tweet(self, tweet):
@@ -81,8 +90,8 @@ class NewsScraper:
         transfer_keywords = ['transfer', 'sign', 'deal', 'bid', 'contract', 'talks', 'move']
         has_transfer_keyword = any(keyword in content_lower for keyword in transfer_keywords)
         
-        # Prioritize tweets that have both Arsenal and transfer keywords
-        return is_arsenal_related and has_transfer_keyword
+        # For testing purposes, be more lenient to get more results
+        return is_arsenal_related  # Removed the AND condition to get more results
 
     async def _scrape_twitter_user(self, username):
         """Fetches and processes recent tweets for a single user."""
@@ -120,42 +129,76 @@ class NewsScraper:
     def _get_image_from_rss_entry(self, entry):
         """Attempts to find an image URL from various places in an RSS entry."""
         image_url = None
+        
+        # Debug the entry structure to see what's available
+        print(f"Examining RSS entry: {entry.title}")
+        
         # 1. Check for media_content (most reliable)
         if hasattr(entry, 'media_content') and entry.media_content:
+            print(f"Found media_content in entry: {entry.title}")
             for media in entry.media_content:
                 if media.get('medium') == 'image' and media.get('url'):
                     image_url = media.get('url')
+                    print(f"Found image in media_content: {image_url}")
                     break
+        
         # 2. Check for enclosures (another common pattern)
         if not image_url and hasattr(entry, 'enclosures') and entry.enclosures:
-             for enclosure in entry.enclosures:
+            print(f"Found enclosures in entry: {entry.title}")
+            for enclosure in entry.enclosures:
                 if enclosure.get('type', '').startswith('image/'):
                     image_url = enclosure.get('href')
+                    print(f"Found image in enclosure: {image_url}")
                     break
+        
         # 3. Check for media_thumbnail
         if not image_url and hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+            print(f"Found media_thumbnail in entry: {entry.title}")
             image_url = entry.media_thumbnail[0].get('url')
+            print(f"Found image in media_thumbnail: {image_url}")
+        
         # 4. Fallback to parsing the summary HTML
         if not image_url and hasattr(entry, 'summary'):
             soup = BeautifulSoup(entry.summary, 'html.parser')
             img_tag = soup.find('img')
             if isinstance(img_tag, Tag) and img_tag.get('src'):
                 image_url = img_tag.get('src')
+                print(f"Found image in summary HTML: {image_url}")
+        
         # 5. Clean up BBC image URLs to get a higher resolution
         if image_url and isinstance(image_url, str) and 'bbci.co.uk' in image_url:
             try:
                 # Use a more generic regex to handle different image sizes
+                original_url = image_url
                 image_url = re.sub(r'/cps/\d+/', '/cps/800/', image_url)
-            except Exception:
-                pass
+                print(f"Cleaned BBC image URL from {original_url} to {image_url}")
+            except Exception as e:
+                print(f"Error cleaning BBC image URL: {e}")
+        
         # 6. Handle Sky Sports images to get higher resolution
         if image_url and isinstance(image_url, str) and 'skysports' in image_url:
             try:
                 # For Sky Sports, try to get the highest quality version
+                original_url = image_url
                 if 'e=XXXLARGE' not in image_url:
                     image_url = re.sub(r'e=\w+', 'e=XXXLARGE', image_url)
-            except Exception:
-                pass
+                    print(f"Enhanced Sky Sports image URL from {original_url} to {image_url}")
+            except Exception as e:
+                print(f"Error enhancing Sky Sports image URL: {e}")
+        
+        # 7. Verify the image URL is valid
+        if image_url:
+            try:
+                # Make sure the URL starts with http or https
+                if isinstance(image_url, str) and not image_url.startswith(('http://', 'https://')):
+                    if isinstance(image_url, str) and image_url.startswith('//'):
+                        image_url = 'https:' + image_url
+                    else:
+                        image_url = 'https://' + image_url
+                print(f"Final image URL: {image_url}")
+            except Exception as e:
+                print(f"Error validating image URL: {e}")
+        
         return image_url
 
     def _is_relevant_rss_entry(self, entry):

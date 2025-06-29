@@ -20,6 +20,11 @@ async def search_player_image(player_name):
     """
     Searches for a player image using SerpAPI as a fallback if scraped images are not good.
     Returns the URL of the first image result.
+    
+    TODO: This function needs to be improved in a future update as the current
+    image scraping solution is not working properly. Consider implementing a more
+    reliable image search solution or integrating with a sports API that provides
+    player images.
     """
     if not SERPAPI_API_KEY:
         print("SERPAPI_API_KEY not found in environment variables. Skipping image search.")
@@ -56,18 +61,37 @@ async def enhance_articles_with_images(processed_articles):
     enhanced_articles = []
     
     for article in processed_articles:
-        # If the article has no image or player name, skip enhancement
+        # If the article has no player name, skip enhancement
         if not article.get("player_name"):
             enhanced_articles.append(article)
             continue
             
-        # If the article has no image, search for one
-        if not article.get("image_url"):
-            print(f"Searching for image for {article['player_name']}...")
-            image_url = await search_player_image(article["player_name"])
+        player_name = article["player_name"]
+        
+        # Check if we should search for a new image
+        should_search_image = False
+        
+        # If no image_url or it's null/None, definitely search
+        if not article.get("image_url") or article["image_url"] is None:
+            should_search_image = True
+            print(f"No image found for {player_name}, will search for one")
+        
+        # If we have an image but it contains generic terms, search for a better one
+        elif isinstance(article["image_url"], str):
+            generic_terms = ['logo', 'badge', 'stadium', 'generic', 'placeholder']
+            if any(term in article["image_url"].lower() for term in generic_terms):
+                should_search_image = True
+                print(f"Found generic image for {player_name}, will search for a better one")
+        
+        # Search for a player-specific image if needed
+        if should_search_image:
+            print(f"Searching for image for {player_name}...")
+            image_url = await search_player_image(player_name)
             if image_url:
                 article["image_url"] = image_url
-                print(f"Found image for {article['player_name']}")
+                print(f"Found image for {player_name}: {image_url}")
+            else:
+                print(f"Could not find image for {player_name}")
         
         enhanced_articles.append(article)
     

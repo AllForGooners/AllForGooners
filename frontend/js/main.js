@@ -127,7 +127,35 @@ class AllForGooners {
         const headline = article.headline || 'All For Gooners';
         const source = article.source_name || 'Unknown';
         const url = article.url || '#';
-        const imageUrl = article.image_url ? article.image_url : 'images/arsenal-logo.jpg';
+        
+        // Player-specific image handling
+        let imageUrl = null;
+        const playerName = article.player_name || '';
+        
+        // First try to use the image_url from the article if it exists
+        if (article.image_url && article.image_url !== 'null' && article.image_url !== 'undefined') {
+            imageUrl = article.image_url;
+            console.log(`Using provided image for ${playerName}: ${imageUrl}`);
+        } else {
+            // If no image_url, use default Arsenal images based on player name
+            const defaultImages = [
+                'images/arsenal-logo.jpg',
+                'images/emirates-stadium.jpg',
+                'images/football-texture.jpg',
+                'images/stadium-atmosphere.jpeg',
+                'images/vintage-ball.jpg'
+            ];
+            
+            // Use player name to determine which default image to use (simple hash function)
+            const hashString = playerName || headline;
+            const imageIndex = Math.abs(hashString.split('').reduce((a, b) => {
+                return a + b.charCodeAt(0);
+            }, 0) % defaultImages.length);
+            
+            imageUrl = defaultImages[imageIndex];
+            console.log(`Using default image for ${playerName}: ${imageUrl}`);
+        }
+        
         const summary = article.news_summary || '';
         const publishedAt = article.published_at ? this.timeAgo(article.published_at) : '';
         const isTwitterSource = source === 'Fabrizio Romano' || source === 'David Ornstein';

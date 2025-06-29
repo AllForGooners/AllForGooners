@@ -320,7 +320,7 @@ body {
     height: 200px;
     object-fit: cover;
     border-radius: 8px;
-    margin-top: var(--spacing-sm); /* Move image below the headline */
+    margin-top: 0; /* Remove space between headline and image */
     margin-bottom: var(--spacing-sm);
 }
 
