@@ -1,2 +1,8 @@
+   echo "cookies.json
 venv/
-cookies.json
+.env
+**/apikey.txt
+**/*_key.txt
+**/secrets.json
+**/*.pem
+**/.env*" > .gitignore
