@@ -136,7 +136,7 @@ class AllForGooners {
         const url = article.url || '#';
         
         // The backend now provides a reliable image_url.
-        const imageUrl = article.image_url || 'images/arsenal-logo.jpg'; // Simple fallback
+        const imageUrl = article.image_url || 'images/arsenal-logo.png'; // Simple fallback
         
         const summary = article.news_summary || '';
         const publishedAt = article.published_at ? this.timeAgo(article.published_at) : '';
@@ -151,7 +151,7 @@ class AllForGooners {
             <div class="news-card" data-news-id="${article.id || url}">
                 <div class="news-content">
                     <h2 class="news-headline">${headline}</h2>
-                    <img src="${imageUrl}" alt="${headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.jpg';">
+                    <img src="${imageUrl}" alt="${headline}" class="news-image" onerror="this.onerror=null;this.src='images/arsenal-logo.png';">
                     <p class="news-summary">${summary}</p>
                     <div class="news-footer">
                         <div class="news-card__source-info">
