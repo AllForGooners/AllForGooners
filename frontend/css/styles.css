@@ -167,9 +167,9 @@ body {
 .ticker-content {
     padding-left: 140px;
     white-space: nowrap;
+    position: relative;
+    height: 1.5em;
     overflow: hidden;
-    text-overflow: ellipsis;
-    transition: opacity 0.4s ease-in-out;
 }
 
 @keyframes scroll-left {

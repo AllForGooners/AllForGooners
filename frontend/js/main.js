@@ -24,8 +24,8 @@ class AllForGooners {
         this.showLoading();
         await this.loadTransferData();
         this.renderNews();
-        this.setupNewsTicker();
         this.setupEventListeners();
+        this.setupNewsTicker();
         this.hideLoading();
         this.addPageAnimations();
         
@@ -33,6 +33,9 @@ class AllForGooners {
         setTimeout(() => {
             this.simulateNewNews();
         }, 2000);
+
+        // Add intersection observer for animations
+        this.observeNewsCards();
     }
 
     showLoading() {
@@ -123,59 +126,6 @@ class AllForGooners {
         const dedupedList = Object.values(deduped);
 
         gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
-        // Add intersection observer for animations
-        this.observeNewsCards();
-    }
-
-    setupNewsTicker() {
-        const tickerContent = document.querySelector('.ticker-content');
-        const ticker = document.querySelector('.breaking-ticker');
-
-        if (!tickerContent || !ticker || !this.transferData || this.transferData.length === 0) {
-            if (ticker) ticker.style.display = 'none';
-            return;
-        }
-
-        const headlines = this.transferData
-            .slice(0, 5)
-            .map(item => item.headline || 'New transfer update');
-
-        if (headlines.length === 0) {
-            if (ticker) ticker.style.display = 'none';
-            return;
-        }
-
-        ticker.style.display = 'block';
-        tickerContent.innerHTML = ''; // Clear any previous content
-
-        const delayBetweenItems = 3; // 3 seconds
-        const animationDuration = headlines.length * delayBetweenItems * 2; // Make it long enough for a good gap
-
-        // Inject the animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes chase-scroll {
-                0% { transform: translateX(100%); }
-                100% { transform: translateX(-150%); } /* Scroll further to ensure it's off-screen */
-            }
-        `;
-        document.head.appendChild(style);
-
-        headlines.forEach((headline, index) => {
-            const item = document.createElement('span');
-            item.textContent = headline;
-            // Style the item for animation
-            item.style.position = 'absolute';
-            item.style.whiteSpace = 'nowrap';
-            item.style.paddingRight = '50px'; // Add spacing between headlines
-            item.style.animationName = 'chase-scroll';
-            item.style.animationTimingFunction = 'linear';
-            item.style.animationIterationCount = 'infinite';
-            item.style.animationDuration = `${animationDuration}s`;
-            item.style.animationDelay = `${index * delayBetweenItems}s`;
-
-            tickerContent.appendChild(item);
-        });
     }
 
     createNewsCard(article) {
@@ -595,6 +545,60 @@ class AllForGooners {
             }
             }, 300);
         }, 3000);
+    }
+
+    setupNewsTicker() {
+        const tickerContent = document.querySelector('.ticker-content');
+        const ticker = document.querySelector('.breaking-ticker');
+
+        if (!tickerContent || !ticker || !this.transferData || this.transferData.length === 0) {
+            if (ticker) ticker.style.display = 'none';
+            return;
+        }
+
+        const headlines = this.transferData
+            .slice(0, 5)
+            .map(item => item.headline || 'New transfer update');
+
+        if (headlines.length === 0) {
+            if (ticker) ticker.style.display = 'none';
+            return;
+        }
+
+        ticker.style.display = 'block';
+        tickerContent.innerHTML = ''; // Clear static placeholder
+
+        const animationDuration = 30; // A nice long duration for a smooth scroll
+        const delayBetweenItems = 3; // The 3-second delay you requested
+
+        // Inject the master keyframe animation into the document's head
+        const styleId = 'ticker-animations';
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                @keyframes ticker-scroll-chase {
+                    from { transform: translateX(100vw); }
+                    to { transform: translateX(-110vw); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        headlines.forEach((headline, index) => {
+            const item = document.createElement('span');
+            item.textContent = headline;
+            
+            // Style the item for animation
+            item.style.position = 'absolute';
+            item.style.whiteSpace = 'nowrap';
+
+            // Apply the master animation with a staggered delay
+            const delay = index * delayBetweenItems;
+            item.style.animation = `ticker-scroll-chase ${animationDuration}s linear ${delay}s infinite`;
+
+            tickerContent.appendChild(item);
+        });
     }
 }
 
