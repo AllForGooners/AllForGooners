@@ -7,50 +7,34 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from newscraper import NewsScraper
 from llm_processor import process_with_llm
+from sports_api_client import SportsApiClient
 
 # --- CONFIGURATION ---
 load_dotenv() # Load environment variables from .env file
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY")
 
 # --- IMAGE SEARCH FUNCTION ---
 async def search_player_image(player_name):
     """
-    Searches for a player image using SerpAPI as a fallback if scraped images are not good.
-    Returns the URL of the first image result.
-    
-    TODO: This function needs to be improved in a future update as the current
-    image scraping solution is not working properly. Consider implementing a more
-    reliable image search solution or integrating with a sports API that provides
-    player images.
+    Searches for a player image using the SportsApiClient.
+    This provides a more reliable source for player headshots than generic search.
     """
-    if not SERPAPI_API_KEY:
-        print("SERPAPI_API_KEY not found in environment variables. Skipping image search.")
-        return None
-        
+    print(f"Initializing SportsApiClient to search for image of {player_name}...")
     try:
-        search_query = f"{player_name} arsenal football player"
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://serpapi.com/search.json",
-                params={
-                    "q": search_query,
-                    "tbm": "isch",  # Image search
-                    "api_key": SERPAPI_API_KEY
-                },
-                timeout=10
-            )
-            response.raise_for_status()
-            data = response.json()
-            
-            # Extract the first image URL
-            if "images_results" in data and len(data["images_results"]) > 0:
-                return data["images_results"][0]["original"]
+        client = SportsApiClient()
+        # Using a hardcoded team_id for Arsenal (42) as this app is Arsenal-specific.
+        image_url = await client.get_player_image(player_name, team_id=42)
+        
+        if image_url:
+            return image_url
+        else:
+            print(f"SportsApiClient could not find an image for {player_name}.")
             return None
+
     except Exception as e:
-        print(f"Error searching for player image: {e}")
+        print(f"Error using SportsApiClient for {player_name}: {e}")
         return None
 
 # --- ENHANCE ARTICLES WITH BETTER IMAGES ---
@@ -145,10 +129,10 @@ async def main():
     if enhanced_articles:
         print("Saving processed articles to Supabase...")
         try:
-            # 'upsert' will insert new rows or update existing ones if the headline matches
+            # 'upsert' will insert new rows or update existing ones if the player_name matches
             data, count = supabase.table('transfer_news').upsert(
                 enhanced_articles, 
-                on_conflict='headline'
+                on_conflict='player_name'
             ).execute()
             print(f"Successfully upserted {len(data[1])} articles into Supabase.")
         except Exception as e:
