@@ -569,7 +569,7 @@ class AllForGooners {
         tickerContent.innerHTML = ''; // Clear static placeholder
 
         const animationDuration = 30; // A nice long duration for a smooth scroll
-        const delayBetweenItems = 3; // The 3-second delay you requested
+        const delayBetweenItems = 5; // The 5-second delay you requested
 
         // Inject the master keyframe animation into the document's head
         const styleId = 'ticker-animations';
@@ -589,9 +589,10 @@ class AllForGooners {
             const item = document.createElement('span');
             item.textContent = headline;
             
-            // Style the item for animation
+            // Style the item for animation and set initial position
             item.style.position = 'absolute';
             item.style.whiteSpace = 'nowrap';
+            item.style.transform = 'translateX(100vw)'; // Start off-screen to prevent flash
 
             // Apply the master animation with a staggered delay
             const delay = index * delayBetweenItems;
