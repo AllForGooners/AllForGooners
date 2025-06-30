@@ -85,14 +85,15 @@ body {
 
 .logo-section {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-md);
 }
 
 .arsenal-logo {
-    height: 3.8rem;
-    width: 3.8rem;
+    height: 4.2rem;
+    width: 4.2rem;
     object-fit: contain;
+    margin-top: -0.1rem;
 }
 
 .site-title h1 {
@@ -102,6 +103,8 @@ body {
     color: var(--arsenal-white);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     letter-spacing: 2px;
+    line-height: 1.1;
+    margin-bottom: 0;
 }
 
 .tagline {
@@ -109,7 +112,7 @@ body {
     color: var(--arsenal-gold);
     font-weight: 600;
     letter-spacing: 1px;
-    margin-top: 0;
+    margin-top: -0.2rem;
 }
 
 .main-nav ul {
