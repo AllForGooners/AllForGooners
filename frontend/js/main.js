@@ -24,7 +24,7 @@ class AllForGooners {
         this.showLoading();
         await this.loadTransferData();
         this.renderNews();
-        this.renderTicker();
+        this.setupNewsTicker();
         this.setupEventListeners();
         this.hideLoading();
         this.addPageAnimations();
@@ -127,22 +127,39 @@ class AllForGooners {
         this.observeNewsCards();
     }
 
-    renderTicker() {
+    setupNewsTicker() {
         const tickerContent = document.querySelector('.ticker-content');
         const ticker = document.querySelector('.breaking-ticker');
-
+        
         if (!tickerContent || !ticker || !this.transferData || this.transferData.length === 0) {
             if (ticker) ticker.style.display = 'none';
             return;
         }
 
-        const latestHeadlines = this.transferData
+        const headlines = this.transferData
             .slice(0, 5)
-            .map(item => item.headline || 'New transfer update')
-            .join(' &bull; ');
+            .map(item => item.headline || 'New transfer update');
 
-        tickerContent.innerHTML = latestHeadlines;
+        if (headlines.length === 0) {
+            if (ticker) ticker.style.display = 'none';
+            return;
+        }
+
+        let currentIndex = 0;
+        tickerContent.textContent = headlines[currentIndex];
         ticker.style.display = 'block';
+
+        if (headlines.length > 1) {
+            setInterval(() => {
+                tickerContent.style.opacity = 0;
+
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % headlines.length;
+                    tickerContent.textContent = headlines[currentIndex];
+                    tickerContent.style.opacity = 1;
+                }, 400); // Should match CSS transition time
+            }, 5000); // Change headline every 5 seconds
+        }
     }
 
     createNewsCard(article) {
