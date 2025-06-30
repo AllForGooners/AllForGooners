@@ -242,7 +242,7 @@ class AllForGooners {
         const diffInSeconds = Math.floor((now - date) / 1000);
 
         if (diffInSeconds < 60) return 'Just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}h ago`;
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
         if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
         return date.toLocaleDateString();
@@ -421,18 +421,29 @@ class AllForGooners {
 
     simulateNewNews() {
         if (!this.transferData) return;
+        
+        // Remove existing indicator if it exists
+        const existingIndicator = document.querySelector('.rumors__new-news-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
         // Add a visual indicator for new content
-        const hero = document.querySelector('.hero-section');
-        if (hero) {
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent) {
             const indicator = document.createElement('div');
             indicator.className = 'rumors__new-news-indicator';
             indicator.setAttribute('role', 'status');
             indicator.setAttribute('aria-live', 'polite');
             indicator.textContent = 'NEW NEWS AVAILABLE';
-            hero.appendChild(indicator);
+            
+            // Add to the hero section bottom
+            heroContent.appendChild(indicator);
+            
+            // Remove after 5 seconds
             setTimeout(() => {
-                if (hero.contains(indicator)) {
-                    hero.removeChild(indicator);
+                if (indicator && indicator.parentElement) {
+                    indicator.parentElement.removeChild(indicator);
                 }
             }, 5000);
         }

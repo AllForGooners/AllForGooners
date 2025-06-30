@@ -92,9 +92,12 @@ body {
 .arsenal-logo {
     width: 60px;
     height: 60px;
+    object-fit: contain;
     border-radius: 50%;
     border: 3px solid var(--arsenal-gold);
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    background-color: var(--arsenal-white);
+    padding: 2px;
 }
 
 .site-title h1 {
@@ -230,6 +233,30 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Notification for new news */
+.rumors__new-news-indicator {
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    background: var(--arsenal-gold);
+    color: var(--arsenal-red);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+    font-family: var(--body-font);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
 /* ========== RUMORS GRID ========== */
 /* Transfer Rumors Grid */
 .rumors-grid {
@@ -325,6 +352,7 @@ body {
     margin-bottom: var(--spacing-sm);
     border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); /* Dark gradient background for transparent images */
 }
 
 .news-summary {
