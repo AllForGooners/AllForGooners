@@ -421,7 +421,7 @@ class AllForGooners {
         // Simulate live updates in a real application
         setInterval(() => {
             this.simulateNewNews();
-        }, 3000); // Every 3 seconds for demo
+        }, 10000); // Every 10 seconds for demo
     }
 
     simulateNewNews() {

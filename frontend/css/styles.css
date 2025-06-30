@@ -90,8 +90,8 @@ body {
 }
 
 .arsenal-logo {
-    width: 60px;
-    height: 60px;
+    height: 3.8rem;
+    width: 3.8rem;
     object-fit: contain;
 }
 
@@ -109,7 +109,7 @@ body {
     color: var(--arsenal-gold);
     font-weight: 600;
     letter-spacing: 1px;
-    margin-top: 0.25rem;
+    margin-top: 0;
 }
 
 .main-nav ul {
