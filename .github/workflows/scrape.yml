@@ -15,14 +15,29 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'  # Using 3.11 as it's more stable for production
 
       - name: Install Python dependencies
-        run: pip install -r api/requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r api/requirements.txt
 
       - name: Run scraper script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: python api/scrape.py 
+          # Add any API keys needed for the sports APIs
+          API_FOOTBALL_API_KEY: ${{ secrets.API_FOOTBALL_API_KEY }}
+          SPORTMONKS_API_KEY: ${{ secrets.SPORTMONKS_API_KEY }}
+          WIKIMEDIA_CLIENT_ID: ${{ secrets.WIKIMEDIA_CLIENT_ID }}
+          WIKIMEDIA_CLIENT_SECRET: ${{ secrets.WIKIMEDIA_CLIENT_SECRET }}
+          WIKIPEDIA_ACCESS_TOKEN: ${{ secrets.WIKIPEDIA_ACCESS_TOKEN }}
+        run: python api/scrape.py
+        
+      - name: Report scraping status
+        if: always()
+        run: |
+          echo "Scraping job completed at $(date)"
+          # You could add additional reporting here like sending notifications 
