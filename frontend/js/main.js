@@ -130,7 +130,7 @@ class AllForGooners {
     setupNewsTicker() {
         const tickerContent = document.querySelector('.ticker-content');
         const ticker = document.querySelector('.breaking-ticker');
-        
+
         if (!tickerContent || !ticker || !this.transferData || this.transferData.length === 0) {
             if (ticker) ticker.style.display = 'none';
             return;
@@ -145,21 +145,37 @@ class AllForGooners {
             return;
         }
 
-        let currentIndex = 0;
-        tickerContent.textContent = headlines[currentIndex];
         ticker.style.display = 'block';
+        tickerContent.innerHTML = ''; // Clear any previous content
 
-        if (headlines.length > 1) {
-            setInterval(() => {
-                tickerContent.style.opacity = 0;
+        const delayBetweenItems = 3; // 3 seconds
+        const animationDuration = headlines.length * delayBetweenItems * 2; // Make it long enough for a good gap
 
-                setTimeout(() => {
-                    currentIndex = (currentIndex + 1) % headlines.length;
-                    tickerContent.textContent = headlines[currentIndex];
-                    tickerContent.style.opacity = 1;
-                }, 400); // Should match CSS transition time
-            }, 5000); // Change headline every 5 seconds
-        }
+        // Inject the animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes chase-scroll {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-150%); } /* Scroll further to ensure it's off-screen */
+            }
+        `;
+        document.head.appendChild(style);
+
+        headlines.forEach((headline, index) => {
+            const item = document.createElement('span');
+            item.textContent = headline;
+            // Style the item for animation
+            item.style.position = 'absolute';
+            item.style.whiteSpace = 'nowrap';
+            item.style.paddingRight = '50px'; // Add spacing between headlines
+            item.style.animationName = 'chase-scroll';
+            item.style.animationTimingFunction = 'linear';
+            item.style.animationIterationCount = 'infinite';
+            item.style.animationDuration = `${animationDuration}s`;
+            item.style.animationDelay = `${index * delayBetweenItems}s`;
+
+            tickerContent.appendChild(item);
+        });
     }
 
     createNewsCard(article) {
