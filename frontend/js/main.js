@@ -27,6 +27,11 @@ class AllForGooners {
         this.setupEventListeners();
         this.hideLoading();
         this.addPageAnimations();
+        
+        // Show the new news notification for testing
+        setTimeout(() => {
+            this.simulateNewNews();
+        }, 2000);
     }
 
     showLoading() {
@@ -429,23 +434,29 @@ class AllForGooners {
         }
         
         // Add a visual indicator for new content
-        const heroContent = document.querySelector('.hero-content');
-        if (heroContent) {
+        const heroSection = document.querySelector('.hero-section');
+        if (heroSection) {
             const indicator = document.createElement('div');
             indicator.className = 'rumors__new-news-indicator';
             indicator.setAttribute('role', 'status');
             indicator.setAttribute('aria-live', 'polite');
             indicator.textContent = 'NEW NEWS AVAILABLE';
             
-            // Add to the hero section bottom
-            heroContent.appendChild(indicator);
+            // Add to the hero section
+            heroSection.appendChild(indicator);
             
-            // Remove after 5 seconds
+            // Make sure it's visible immediately
+            indicator.style.display = 'block';
+            
+            // Remove after 8 seconds
             setTimeout(() => {
                 if (indicator && indicator.parentElement) {
                     indicator.parentElement.removeChild(indicator);
                 }
-            }, 5000);
+            }, 8000);
+
+            // For testing/demo purposes, trigger this immediately when page loads
+            console.log("NEW NEWS AVAILABLE notification shown");
         }
     }
 

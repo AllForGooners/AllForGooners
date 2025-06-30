@@ -93,11 +93,6 @@ body {
     width: 60px;
     height: 60px;
     object-fit: contain;
-    border-radius: 50%;
-    border: 3px solid var(--arsenal-gold);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    background-color: var(--arsenal-white);
-    padding: 2px;
 }
 
 .site-title h1 {
@@ -250,6 +245,7 @@ body {
     animation: pulse 2s infinite;
     font-family: var(--body-font);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10;
 }
 
 @keyframes pulse {
