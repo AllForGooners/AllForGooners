@@ -492,22 +492,6 @@ class AllForGooners {
         document.head.appendChild(style);
     }
 
-    adjustTitleWidth() {
-        const subtitle = document.querySelector('.brand .subtitle');
-        const title = document.querySelector('.brand .brand-name');
-
-        if (subtitle && title) {
-            const subtitleWidth = subtitle.getBoundingClientRect().width;
-            const titleWidth = title.getBoundingClientRect().width;
-            
-            if (titleWidth > 0) {
-                const scaleX = subtitleWidth / titleWidth;
-                title.style.transform = `scaleX(${scaleX})`;
-                title.style.transformOrigin = 'left';
-            }
-        }
-    }
-
     // Utility methods for enhanced functionality
     shareNews(newsId) {
         const news = this.transferData.find(r => r.id === newsId);
@@ -578,12 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const app = new AllForGooners();
         // Make app globally available for debugging
         window.allForGoonersApp = app;
-
-        // Ensures fonts are loaded before calculating widths for better accuracy
-        document.fonts.ready.then(() => app.adjustTitleWidth());
-
-        // Re-align on window resize
-        window.addEventListener('resize', () => app.adjustTitleWidth());
 
     } else {
         console.error('Supabase not loaded. Please check your internet connection.');
