@@ -492,22 +492,18 @@ class AllForGooners {
         document.head.appendChild(style);
     }
 
-    alignHeaderWidths() {
-        const titleElement = document.querySelector('.site-title h1');
-        const subtitleElement = document.querySelector('.site-title .tagline');
+    adjustTitleWidth() {
+        const subtitle = document.querySelector('.brand .subtitle');
+        const title = document.querySelector('.brand .brand-name');
 
-        if (titleElement && subtitleElement) {
-            // Reset any previous scaling
-            titleElement.style.transform = 'scaleX(1)';
+        if (subtitle && title) {
+            const subtitleWidth = subtitle.getBoundingClientRect().width;
+            const titleWidth = title.getBoundingClientRect().width;
             
-            // Measure widths
-            const subtitleWidth = subtitleElement.offsetWidth;
-            const titleWidth = titleElement.offsetWidth;
-
             if (titleWidth > 0) {
-                const scaleFactor = subtitleWidth / titleWidth;
-                titleElement.style.transform = `scaleX(${scaleFactor})`;
-                titleElement.style.transformOrigin = 'left';
+                const scaleX = subtitleWidth / titleWidth;
+                title.style.transform = `scaleX(${scaleX})`;
+                title.style.transformOrigin = 'left';
             }
         }
     }
@@ -583,13 +579,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Make app globally available for debugging
         window.allForGoonersApp = app;
 
-        // Align header widths after a short delay to ensure fonts are loaded
-        setTimeout(() => {
-            app.alignHeaderWidths();
-        }, 100);
+        // Ensures fonts are loaded before calculating widths for better accuracy
+        document.fonts.ready.then(() => app.adjustTitleWidth());
 
         // Re-align on window resize
-        window.addEventListener('resize', () => app.alignHeaderWidths());
+        window.addEventListener('resize', () => app.adjustTitleWidth());
 
     } else {
         console.error('Supabase not loaded. Please check your internet connection.');
