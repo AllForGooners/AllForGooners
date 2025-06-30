@@ -426,37 +426,20 @@ class AllForGooners {
 
     simulateNewNews() {
         if (!this.transferData) return;
-        
-        // Remove existing indicator if it exists
-        const existingIndicator = document.querySelector('.rumors__new-news-indicator');
-        if (existingIndicator) {
-            existingIndicator.remove();
-        }
-        
         // Add a visual indicator for new content
-        const heroSection = document.querySelector('.hero-section');
-        if (heroSection) {
+        const hero = document.querySelector('.hero-section');
+        if (hero) {
             const indicator = document.createElement('div');
             indicator.className = 'rumors__new-news-indicator';
             indicator.setAttribute('role', 'status');
             indicator.setAttribute('aria-live', 'polite');
             indicator.textContent = 'NEW NEWS AVAILABLE';
-            
-            // Add to the hero section
-            heroSection.appendChild(indicator);
-            
-            // Make sure it's visible immediately
-            indicator.style.display = 'block';
-            
-            // Remove after 8 seconds
+            hero.appendChild(indicator);
             setTimeout(() => {
-                if (indicator && indicator.parentElement) {
-                    indicator.parentElement.removeChild(indicator);
+                if (hero.contains(indicator)) {
+                    hero.removeChild(indicator);
                 }
-            }, 8000);
-
-            // For testing/demo purposes, trigger this immediately when page loads
-            console.log("NEW NEWS AVAILABLE notification shown");
+            }, 5000);
         }
     }
 
