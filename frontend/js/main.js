@@ -492,6 +492,26 @@ class AllForGooners {
         document.head.appendChild(style);
     }
 
+    alignHeaderWidths() {
+        const titleElement = document.querySelector('.site-title h1');
+        const subtitleElement = document.querySelector('.site-title .tagline');
+
+        if (titleElement && subtitleElement) {
+            // Reset any previous scaling
+            titleElement.style.transform = 'scaleX(1)';
+            
+            // Measure widths
+            const subtitleWidth = subtitleElement.offsetWidth;
+            const titleWidth = titleElement.offsetWidth;
+
+            if (titleWidth > 0) {
+                const scaleFactor = subtitleWidth / titleWidth;
+                titleElement.style.transform = `scaleX(${scaleFactor})`;
+                titleElement.style.transformOrigin = 'left';
+            }
+        }
+    }
+
     // Utility methods for enhanced functionality
     shareNews(newsId) {
         const news = this.transferData.find(r => r.id === newsId);
@@ -562,6 +582,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const app = new AllForGooners();
         // Make app globally available for debugging
         window.allForGoonersApp = app;
+
+        // Align header widths after a short delay to ensure fonts are loaded
+        setTimeout(() => {
+            app.alignHeaderWidths();
+        }, 100);
+
+        // Re-align on window resize
+        window.addEventListener('resize', () => app.alignHeaderWidths());
+
     } else {
         console.error('Supabase not loaded. Please check your internet connection.');
         // Show error message to user
