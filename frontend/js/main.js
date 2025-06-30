@@ -24,6 +24,7 @@ class AllForGooners {
         this.showLoading();
         await this.loadTransferData();
         this.renderNews();
+        this.renderTicker();
         this.setupEventListeners();
         this.hideLoading();
         this.addPageAnimations();
@@ -124,6 +125,24 @@ class AllForGooners {
         gridContainer.innerHTML = dedupedList.map(item => this.createNewsCard(item)).join('');
         // Add intersection observer for animations
         this.observeNewsCards();
+    }
+
+    renderTicker() {
+        const tickerContent = document.querySelector('.ticker-content');
+        const ticker = document.querySelector('.breaking-ticker');
+
+        if (!tickerContent || !ticker || !this.transferData || this.transferData.length === 0) {
+            if (ticker) ticker.style.display = 'none';
+            return;
+        }
+
+        const latestHeadlines = this.transferData
+            .slice(0, 5)
+            .map(item => item.headline || 'New transfer update')
+            .join(' &bull; ');
+
+        tickerContent.innerHTML = latestHeadlines;
+        ticker.style.display = 'block';
     }
 
     createNewsCard(article) {
