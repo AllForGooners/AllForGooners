@@ -50,4 +50,4 @@ fi
 echo "Configuration complete. Starting Nitter..."
 # Execute the main nitter application process.
 # This replaces the shell process, making Nitter the main container process.
-exec /usr/local/bin/nitter
+exec /src/nitter
