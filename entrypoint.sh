@@ -9,9 +9,11 @@ CONFIG_FILE="/src/nitter.conf"
 # --- Update Hostname ---
 # Check if NITTER_HOSTNAME is set and not empty, then update the config.
 if [ -n "$NITTER_HOSTNAME" ]; then
-  echo "Updating hostname to $NITTER_HOSTNAME"
+  # Strip protocol (e.g., https://) from the hostname
+  HOSTNAME_NO_PROTO=${NITTER_HOSTNAME#*//}
+  echo "Updating hostname to $HOSTNAME_NO_PROTO"
   # Use sed's pipe delimiter for URLs to avoid escaping slashes.
-  sed -i "s|hostname = \".*\"|hostname = \"$NITTER_HOSTNAME\"|" "$CONFIG_FILE"
+  sed -i "s|hostname = \".*\"|hostname = \"$HOSTNAME_NO_PROTO\"|" "$CONFIG_FILE"
 else
   echo "Warning: NITTER_HOSTNAME environment variable not set."
 fi
