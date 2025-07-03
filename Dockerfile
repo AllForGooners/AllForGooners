@@ -11,5 +11,9 @@ COPY nitter.conf /src/nitter.conf
 # Copy the sessions.jsonl file
 COPY sessions.jsonl /src/sessions.jsonl
 
+# Copy the entrypoint script
+COPY entrypoint.sh /src/entrypoint.sh
+RUN chmod +x /src/entrypoint.sh
+
 # The command to start the Nitter service
-CMD ["/src/nitter"]
+CMD ["/src/entrypoint.sh"]
