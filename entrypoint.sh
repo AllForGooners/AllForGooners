@@ -19,33 +19,15 @@ else
 fi
 
 # --- Update Redis Configuration ---
-# Check if REDIS_URL is set and not empty.
+# Check if REDIS_URL is set and not empty, then update the config.
+# This is the recommended way to configure Redis for Nitter.
 if [ -n "$REDIS_URL" ]; then
-  echo "Parsing REDIS_URL and updating nitter.conf"
-
-  # Use shell parameter expansion for robust parsing of redis://user:pass@host:port
-  # This method is more reliable than awk/sed for various URL formats.
-
-  # 1. Strip protocol (redis:// or rediss://)
-  URL_NO_PROTO=${REDIS_URL#*://}
-
-  # 2. Extract host and port
-  HOST_PORT=${URL_NO_PROTO#*@}
-  REDIS_HOST=${HOST_PORT%:*}
-  REDIS_PORT=${HOST_PORT#*:}
-
-  # 3. Extract password
-  CREDS=${URL_NO_PROTO%@*}
-  REDIS_PASSWORD=${CREDS#*:}
-
-  # Update nitter.conf with the parsed Redis details
-  sed -i "s|redisHost = \".*\"|redisHost = \"$REDIS_HOST\"|" "$CONFIG_FILE"
-  sed -i "s|redisPort = .*|redisPort = $REDIS_PORT|" "$CONFIG_FILE"
-  sed -i "s|redisPassword = \".*\"|redisPassword = \"$REDIS_PASSWORD\"|" "$CONFIG_FILE"
-
-  echo "Redis configured successfully."
+  echo "Updating redisUrl in nitter.conf with the provided REDIS_URL"
+  # Use sed's pipe delimiter for URLs to avoid escaping slashes.
+  sed -i "s|redisUrl = \".*\"|redisUrl = \"$REDIS_URL\"|" "$CONFIG_FILE"
+  echo "Redis configured successfully using redisUrl."
 else
-  echo "Warning: REDIS_URL environment variable not set. Nitter will fail to connect."
+  echo "Warning: REDIS_URL environment variable not set. Using default Redis config."
 fi
 
 # --- Start Nitter ---
