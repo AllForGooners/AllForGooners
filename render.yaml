@@ -8,11 +8,11 @@ services:
     env: docker
     # Point to the root of the repository where the Dockerfile is located
     repo: https://github.com/AllForGooners/allforgooners
-    # Set the branch to deploy from. We'll deploy from our feature branch first.
+    # Set the branch to deploy from
     branch: feature/nitter-scraper
-    # Specify the free plan to avoid charges
+    # Explicitly specify the free plan to avoid charges
     plan: free
-    # Render provides a PORT environment variable that we use to set Nitter's hostname
+    # Environment variables
     envVars:
       - key: NITTER_HOSTNAME
         fromService:
