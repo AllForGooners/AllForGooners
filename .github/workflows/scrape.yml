@@ -28,14 +28,37 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          # Add any API keys needed for the sports APIs
+          # Twitter credentials for scraping tweets
+          TWITTER_USERNAME: ${{ secrets.TWITTER_USERNAME }}
+          TWITTER_EMAIL: ${{ secrets.TWITTER_EMAIL }}
+          TWITTER_PASSWORD: ${{ secrets.TWITTER_PASSWORD }}
+          # Sports API keys
           API_FOOTBALL_API_KEY: ${{ secrets.API_FOOTBALL_API_KEY }}
           SPORTMONKS_API_KEY: ${{ secrets.SPORTMONKS_API_KEY }}
           WIKIMEDIA_CLIENT_ID: ${{ secrets.WIKIMEDIA_CLIENT_ID }}
           WIKIMEDIA_CLIENT_SECRET: ${{ secrets.WIKIMEDIA_CLIENT_SECRET }}
           WIKIPEDIA_ACCESS_TOKEN: ${{ secrets.WIKIPEDIA_ACCESS_TOKEN }}
-        run: python api/scrape.py
-        
+        run: |
+          # Create a temporary .env file with the credentials
+          echo "SUPABASE_URL=$SUPABASE_URL" > .env
+          echo "SUPABASE_KEY=$SUPABASE_KEY" >> .env
+          echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> .env
+          echo "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" >> .env
+          echo "TWITTER_USERNAME=$TWITTER_USERNAME" >> .env
+          echo "TWITTER_EMAIL=$TWITTER_EMAIL" >> .env
+          echo "TWITTER_PASSWORD=$TWITTER_PASSWORD" >> .env
+          echo "API_FOOTBALL_API_KEY=$API_FOOTBALL_API_KEY" >> .env
+          echo "SPORTMONKS_API_KEY=$SPORTMONKS_API_KEY" >> .env
+          echo "WIKIMEDIA_CLIENT_ID=$WIKIMEDIA_CLIENT_ID" >> .env
+          echo "WIKIMEDIA_CLIENT_SECRET=$WIKIMEDIA_CLIENT_SECRET" >> .env
+          echo "WIKIPEDIA_ACCESS_TOKEN=$WIKIPEDIA_ACCESS_TOKEN" >> .env
+          
+          # Run the script
+          python api/scrape.py
+          
+          # Clean up the .env file
+          rm .env
+
       - name: Report scraping status
         if: always()
         run: |

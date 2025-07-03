@@ -27,12 +27,24 @@ class NewsScraper:
 
     async def _login(self):
         """Logs into Twitter using credentials from environment variables."""
-        if os.path.exists('cookies.json'):
-            self.client.load_cookies('cookies.json')
+        # Use absolute path for cookies.json
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(script_dir)
+        cookies_path = os.path.join(root_dir, 'cookies.json')
+        
+        print(f"Looking for cookies at: {cookies_path}")
+        
+        if os.path.exists(cookies_path):
+            print(f"Found cookies.json at {cookies_path}")
+            self.client.load_cookies(cookies_path)
             print("Successfully loaded cookies.")
         else:
             print("No cookie file found. Logging in with credentials...")
-            load_dotenv()
+            # Use absolute path to .env file
+            dotenv_path = os.path.join(root_dir, '.env')
+            print(f"Loading environment from: {dotenv_path}")
+            load_dotenv(dotenv_path=dotenv_path)
+            
             username = os.getenv("TWITTER_USERNAME")
             email = os.getenv("TWITTER_EMAIL")
             password = os.getenv("TWITTER_PASSWORD")
@@ -47,7 +59,7 @@ class NewsScraper:
                 auth_info_2=email,
                 password=password
             )
-            self.client.save_cookies('cookies.json')
+            self.client.save_cookies(cookies_path)
             print("Successfully logged in and saved cookies for future use.")
 
     def _get_image_from_tweet(self, tweet):

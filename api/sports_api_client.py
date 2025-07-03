@@ -8,7 +8,10 @@ import re
 from pathlib import Path
 
 # Load environment variables from .env file
-load_dotenv()
+script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(script_dir)
+dotenv_path = os.path.join(root_dir, '.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 class SportsApiClient:
     """

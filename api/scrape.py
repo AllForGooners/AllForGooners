@@ -10,7 +10,14 @@ from llm_processor import process_with_llm
 from sports_api_client import SportsApiClient
 
 # --- CONFIGURATION ---
-load_dotenv() # Load environment variables from .env file
+# Use absolute path to .env file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(script_dir)
+dotenv_path = os.path.join(root_dir, '.env')
+print(f"Loading environment from: {dotenv_path}")
+print(f".env file exists: {os.path.exists(dotenv_path)}")
+load_dotenv(dotenv_path=dotenv_path) # Load environment variables from .env file
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
