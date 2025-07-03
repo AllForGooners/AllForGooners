@@ -1,0 +1,23 @@
+# services:
+#   nitter:
+#     build: .
+#     container_name: nitter
+#     restart: unless-stopped
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       - NITTER_HOSTNAME: localhost:8080
+
+#     depends_on:
+#       - redis
+
+#   redis:
+#     image: redis:6-alpine
+#     container_name: redis
+#     restart: unless-stopped
+#     volumes:
+#       - redis-data:/data
+
+
+# volumes:
+#   redis-data:
