@@ -26,6 +26,10 @@ if [ -n "$REDIS_URL" ]; then
   # Use sed's pipe delimiter for URLs to avoid escaping slashes.
   sed -i "s|redisUrl = \".*\"|redisUrl = \"$REDIS_URL\"|" "$CONFIG_FILE"
   echo "Redis configured successfully using redisUrl."
+
+  echo "--- Verifying nitter.conf contents ---"
+  cat "$CONFIG_FILE"
+  echo "--------------------------------------"
 else
   echo "Warning: REDIS_URL environment variable not set. Using default Redis config."
 fi
