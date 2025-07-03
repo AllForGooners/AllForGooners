@@ -21,10 +21,4 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: NITTER_HTTPS
         value: "true"
-        
-  - type: redis
-    name: nitter-redis
-    plan: free
-    ipAllowList: # required
-      - source: 0.0.0.0/0
-        description: everywhere
+      # The REDIS_URL will be added as a secret environment variable in the Render dashboard
