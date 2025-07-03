@@ -8,9 +8,8 @@ EXPOSE 8080
 # Copy our custom nitter.conf file into the container
 COPY nitter.conf /src/nitter.conf
 
-# Copy the sessions.jsonl file with proper permissions
+# Copy the sessions.jsonl file
 COPY sessions.jsonl /src/sessions.jsonl
-RUN chmod 644 /src/sessions.jsonl
 
 # The command to start the Nitter service
 CMD ["/src/nitter"]
