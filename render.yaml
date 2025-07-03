@@ -21,3 +21,10 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: NITTER_HTTPS
         value: "true"
+        
+  - type: redis
+    name: nitter-redis
+    plan: free
+    ipAllowList: # required
+      - source: 0.0.0.0/0
+        description: everywhere
