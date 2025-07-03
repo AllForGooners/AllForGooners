@@ -1,11 +1,13 @@
 # Blueprint for deploying Nitter on Render
+# Added a comment to trigger re-evaluation by Render
+# Re-triggering deployment
 
 services:
   - type: web
     name: nitter-scraper-service
     env: docker
     # Point to the root of the repository where the Dockerfile is located
-    repo: https://github.com/GBmarc/All-For-Gooners 
+    repo: https://github.com/GBmarc/All-For-Gooners
     # Set the branch to deploy from. We'll deploy from our feature branch first.
     branch: feature/nitter-scraper
     # Render provides a PORT environment variable that we use to set Nitter's hostname

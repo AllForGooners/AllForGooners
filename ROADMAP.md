@@ -61,7 +61,11 @@ This document outlines the current state of the project and the strategic roadma
     2.  **Develop a Centralized Sports API Client (`api/sports_api_client.py`):** Create a single module to handle all interactions with API-Football, Wikimedia, and SportMonks. Its first function will be `get_player_image()`.
     3.  **Implement API-Driven Image Standardization:** After the LLM identifies a player in an article, call the new API client to get a high-quality, professional headshot.
     4.  **Implement Automated Scraper Execution:** Set up a scheduled task to run the scraping script automatically every hour, ensuring the website is always up-to-date with the latest transfer news without manual intervention.
-    5.  **Research and Implement a Stable X/Twitter Scraping Solution:** Investigate and integrate a more robust, reliable, and safer method for scraping tweets from key journalists, replacing the current high-risk `twikit` implementation.
+    5.  **Research and Implement a Stable X/Twitter Scraping Solution:** Investigate and integrate a more robust, reliable, and safer method for scraping tweets from key journalists, replacing the current high-risk `twikit` implementation. This involves:
+        *   **Nitter Instance Setup:** Obtain Nitter source, containerize with Docker, and configure `nitter.conf` for private use.
+        *   **Deployment on Render:** Define Nitter service in `render.yaml` (web service, Docker build, `feature/nitter-scraper` branch) and configure environment variables.
+        *   **Integration with Scraper:** Update existing scraper to use the deployed Nitter instance's URL and implement robust error handling.
+        *   **Testing and Validation:** Verify Nitter functionality, scraper integration, and monitor performance.
 
 ## Phase 2: Advanced Features
 
