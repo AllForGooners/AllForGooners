@@ -22,9 +22,10 @@ COPY nitter.conf /src/nitter.conf
 # Copy the sessions.jsonl file
 COPY sessions.jsonl /src/sessions.jsonl
 
-# Copy the entrypoint script and set its permissions in one step
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy the entrypoint script to the correct directory and set its permissions.
+# This ensures the script is executable by the 'nitter' user inside the container.
+COPY --chmod=755 entrypoint.sh /src/entrypoint.sh
 
-# The command to start the Nitter service
-CMD ["/entrypoint.sh"]
+# Use ENTRYPOINT to run the container as an executable.
+# This is the idiomatic and correct Docker way to run a startup script.
+ENTRYPOINT ["/src/entrypoint.sh"]
