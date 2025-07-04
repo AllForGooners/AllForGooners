@@ -5,7 +5,7 @@ FROM zedeus/nitter:latest
 USER root
 
 # Install stunnel for TLS proxy and redis-tools for health checks
-RUN apk --no-cache add stunnel redis
+RUN apk --no-cache add stunnel redis findutils
 
 # Copy Nitter configuration files to the working directory
 COPY nitter.conf /src/nitter.conf

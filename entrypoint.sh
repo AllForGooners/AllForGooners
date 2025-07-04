@@ -49,7 +49,30 @@ if [ $RETRIES -eq $MAX_RETRIES ]; then
   echo "Redis is not available after $MAX_RETRIES retries. Continuing anyway, but Nitter might not work properly."
 fi
 
-# Start Nitter
-echo "Starting Nitter..."
-cd /src
-exec ./nitter
+# Find and start Nitter
+echo "Looking for Nitter executable..."
+
+# Check common locations
+NITTER_PATHS=("/src/nitter" "/app/nitter" "/nitter" "/usr/local/bin/nitter" "/usr/bin/nitter")
+
+for path in "${NITTER_PATHS[@]}"; do
+  if [ -f "$path" ] && [ -x "$path" ]; then
+    echo "Found Nitter executable at $path"
+    echo "Starting Nitter..."
+    cd $(dirname "$path")
+    exec ./$(basename "$path")
+    exit 0
+  fi
+done
+
+# If we get here, we couldn't find the executable
+echo "ERROR: Could not find Nitter executable. Checked the following locations:"
+for path in "${NITTER_PATHS[@]}"; do
+  echo "  - $path"
+done
+
+# Try to find it with find command
+echo "Searching for nitter executable in the filesystem..."
+find / -name "nitter" -type f -executable 2>/dev/null || echo "No nitter executable found."
+
+exit 1
