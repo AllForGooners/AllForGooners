@@ -10,12 +10,13 @@ set -e
 # Path for the generated stunnel config
 STUNNEL_CONFIG_PATH="/tmp/stunnel.conf"
 
-# Generate stunnel.conf from the template
-# We use /tmp because the container runs as a non-root user 'nitter' who cannot write to /etc/stunnel
-cat /etc/stunnel/stunnel.conf.template | sed \
-    -e "s/\${REDIS_HOST}/${REDIS_HOST}/g" \
-    -e "s/\${REDIS_PORT}/${REDIS_PORT}/g" \
-    > "${STUNNEL_CONFIG_PATH}"
+# Generate stunnel.conf directly using a heredoc to avoid template file issues.
+cat > "${STUNNEL_CONFIG_PATH}" <<EOF
+[redis-tls]
+client = yes
+accept = 127.0.0.1:6379
+connect = ${REDIS_HOST}:${REDIS_PORT}
+EOF
 
 echo "stunnel configuration generated at ${STUNNEL_CONFIG_PATH}"
 

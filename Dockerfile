@@ -7,12 +7,6 @@ USER root
 # Install stunnel for TLS proxy and redis-tools for health checks
 RUN apk --no-cache add stunnel redis
 
-# Explicitly create the stunnel directory to ensure it exists
-RUN mkdir -p /etc/stunnel
-
-# Copy the stunnel configuration template to the standard location
-COPY stunnel.conf.template /etc/stunnel/stunnel.conf.template
-
 # Copy the custom entrypoint script to a standard binary location
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
