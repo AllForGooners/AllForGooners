@@ -1,5 +1,60 @@
 #!/bin/sh
 
+set -e
+
+# Ensure required environment variables are set
+: "${REDIS_HOST:?REDIS_HOST not set}"
+: "${REDIS_PORT:?REDIS_PORT not set}"
+: "${REDIS_PASSWORD:?REDIS_PASSWORD not set}"
+
+# Path for the generated stunnel config
+STUNNEL_CONFIG_PATH="/tmp/stunnel.conf"
+
+# Generate stunnel.conf from the template
+# We use /tmp because the container runs as a non-root user 'nitter' who cannot write to /etc/stunnel
+cat /etc/stunnel/stunnel.conf.template | sed \
+    -e "s/\${REDIS_HOST}/${REDIS_HOST}/g" \
+    -e "s/\${REDIS_PORT}/${REDIS_PORT}/g" \
+    > "${STUNNEL_CONFIG_PATH}"
+
+echo "stunnel configuration generated at ${STUNNEL_CONFIG_PATH}"
+
+# Start stunnel in the background
+echo "Starting stunnel..."
+stunnel "${STUNNEL_CONFIG_PATH}"
+
+# Wait for the local Redis proxy to be available
+echo "Waiting for stunnel proxy to be ready..."
+until redis-cli -h 127.0.0.1 -p 6379 ping > /dev/null 2>&1; do
+  echo "stunnel proxy not ready yet, sleeping for 1 second..."
+  sleep 1
+done
+
+echo "stunnel proxy is ready."
+
+# Update nitter.conf to use the local stunnel proxy
+CONFIG_FILE="/src/nitter.conf"
+
+echo "Configuring Nitter to use Redis via stunnel..."
+
+# Use a temporary file to avoid issues with sed -i
+TMP_CONFIG_FILE="/tmp/nitter.conf.tmp"
+
+cp "${CONFIG_FILE}" "${TMP_CONFIG_FILE}"
+
+sed -i "s/^redisHost = .*/redisHost = 127.0.0.1/" "${TMP_CONFIG_FILE}"
+sed -i "s/^redisPort = .*/redisPort = 6379/" "${TMP_CONFIG_FILE}"
+sed -i "s/^redisPassword = .*/redisPassword = ${REDIS_PASSWORD}/" "${TMP_CONFIG_FILE}"
+
+# Overwrite the original config file
+mv "${TMP_CONFIG_FILE}" "${CONFIG_FILE}"
+
+echo "nitter.conf updated successfully."
+
+# Start the Nitter application
+echo "Starting Nitter..."
+exec /src/nitter
+
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
@@ -18,13 +73,13 @@ fi
 echo "Configuring stunnel to bridge 127.0.0.1:6379 -> $REDIS_HOST:$REDIS_PORT..."
 
 # Use sed to replace placeholders in the template and create the final config.
-# Note: /etc/stunnel/ is the default config directory for the stunnel package.
+# The config file is written to /tmp, which is writable by any user.
 sed -e "s/__REDIS_HOST__/$REDIS_HOST/" \
     -e "s/__REDIS_PORT__/$REDIS_PORT/" \
-    /src/stunnel.conf.template > /etc/stunnel/stunnel.conf
+    /src/stunnel.conf.template > /tmp/stunnel.conf
 
-# Start the stunnel proxy in the background.
-stunnel /etc/stunnel/stunnel.conf
+# Start the stunnel proxy in the background, pointing to our temp config file.
+stunnel /tmp/stunnel.conf
 echo "stunnel started in background."
 
 # --- Wait for Local Redis Proxy ---
