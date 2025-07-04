@@ -1,30 +1,29 @@
-# Use a specific, stable version of the Nitter image
-# Use a specific, stable version of the Nitter image
+# Start from the official Nitter image as a base
 FROM zedeus/nitter:latest
 
-# Switch to root to install packages and fix file formats.
+# Switch to root user to install packages
 USER root
 
-# Install dependencies. stunnel is the TLS proxy, dos2unix is for fixing line endings.
-RUN apk add --no-cache netcat-openbsd redis dos2unix stunnel
+# Install stunnel for TLS proxy and redis-tools for health checks
+RUN apk --no-cache add stunnel redis
 
-# Copy all application files.
-COPY nitter.conf /src/nitter.conf
-COPY sessions.jsonl /src/sessions.jsonl
-COPY entrypoint.sh /src/entrypoint.sh
-COPY stunnel.conf.template /src/stunnel.conf.template
+# Explicitly create the stunnel directory to ensure it exists
+RUN mkdir -p /etc/stunnel
 
-# Make the script executable and fix line endings in one step.
-# This is the definitive fix based on the diagnostic logs.
-RUN chmod +x /src/entrypoint.sh && \
-    dos2unix /src/entrypoint.sh && \
-    apk del dos2unix
+# Copy the stunnel configuration template to the standard location
+COPY stunnel.conf.template /etc/stunnel/stunnel.conf.template
+
+# Copy the custom entrypoint script to a standard binary location
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Nitter runs on port 8080 inside the container.
 EXPOSE 8080
 
-# Switch back to the non-root user for security before running the application.
+# Switch back to the non-root user for security
 USER nitter
 
-# Use ENTRYPOINT to run the container as an executable, as per Docker best practices.
-ENTRYPOINT ["/src/entrypoint.sh"]
+# Set the entrypoint to our custom script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

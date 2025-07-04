@@ -1,4 +1,10 @@
-; stunnel configuration for connecting to a TLS Redis instance
+pid = /tmp/stunnel.pid
+output = /dev/stdout
+
+[redis-tls]
+client = yes
+accept = 127.0.0.1:6379
+connect = ${REDIS_HOST}:${REDIS_PORT}
 ; This runs as a client, accepting an insecure local connection
 ; and forwarding it over a secure TLS channel.
 
