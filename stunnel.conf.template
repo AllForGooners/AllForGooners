@@ -1,6 +1,3 @@
-pid = /tmp/stunnel.pid
-output = /dev/stdout
-
 [redis-tls]
 client = yes
 accept = 127.0.0.1:6379
