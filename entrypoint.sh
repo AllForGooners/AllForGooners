@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "Configuring Nitter for Northflank deployment..."
@@ -35,7 +35,7 @@ RETRY_INTERVAL=2
 RETRIES=0
 
 while [ $RETRIES -lt $MAX_RETRIES ]; do
-  if redis-cli -h $REDIS_HOST_VAR -p $REDIS_PORT_VAR ping > /dev/null 2>&1; then
+  if redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" ping > /dev/null 2>&1; then
     echo "Redis is ready!"
     break
   else
@@ -60,15 +60,15 @@ if [ -f "./nitter" ] && [ -x "./nitter" ]; then
 else
   echo "ERROR: Could not find Nitter executable at /src/nitter"
   
-  # Fallback to searching for the executable
+  # Fallback to searching for the executable using sh-compatible loop
   echo "Searching for nitter executable in common locations..."
-  NITTER_PATHS=("/app/nitter" "/nitter" "/usr/local/bin/nitter" "/usr/bin/nitter")
+  NITTER_PATHS="/app/nitter /nitter /usr/local/bin/nitter /usr/bin/nitter"
   
-  for path in "${NITTER_PATHS[@]}"; do
+  for path in $NITTER_PATHS; do
     if [ -f "$path" ] && [ -x "$path" ]; then
       echo "Found Nitter executable at $path"
-      cd $(dirname "$path")
-      exec ./$(basename "$path")
+      cd "$(dirname "$path")"
+      exec "./$(basename "$path")"
       exit 0
     fi
   done
