@@ -2,30 +2,28 @@
 # Use a specific, stable version of the Nitter image
 FROM zedeus/nitter:latest
 
-# Switch to root to install packages
+# Switch to root to install packages and fix file formats.
 USER root
 
-# Install netcat, which provides the `nc` command for TCP connection testing
-# Install netcat for basic TCP checks and redis-tools for advanced Redis checks
-RUN apk add --no-cache netcat-openbsd redis
+# Install dependencies. dos2unix is critical for fixing Windows line endings.
+RUN apk add --no-cache netcat-openbsd redis dos2unix
 
-# Switch back to the non-root user for security
-USER nitter
-
-# Nitter runs on port 8080 inside the container
-# Render will map this to the public-facing port 443 (HTTPS)
-EXPOSE 8080
-
-# Copy our custom nitter.conf file into the container
+# Copy all application files.
 COPY nitter.conf /src/nitter.conf
-
-# Copy the sessions.jsonl file
 COPY sessions.jsonl /src/sessions.jsonl
-
-# Copy the entrypoint script to the correct directory and set its permissions.
-# This ensures the script is executable by the 'nitter' user inside the container.
 COPY --chmod=755 entrypoint.sh /src/entrypoint.sh
 
-# Use ENTRYPOINT to run the container as an executable.
-# This is the idiomatic and correct Docker way to run a startup script.
+# Convert the entrypoint script from Windows to Unix format.
+# This is the definitive fix for the "Permission denied" error on Windows.
+# We then remove dos2unix to keep the final image clean.
+RUN dos2unix /src/entrypoint.sh && \
+    apk del dos2unix
+
+# Nitter runs on port 8080 inside the container
+EXPOSE 8080
+
+# Switch back to the non-root user for security before running the application.
+USER nitter
+
+# Use ENTRYPOINT to run the container as an executable, as per Docker best practices.
 ENTRYPOINT ["/src/entrypoint.sh"]
