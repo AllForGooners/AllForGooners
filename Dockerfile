@@ -25,5 +25,6 @@ EXPOSE 8080
 # Switch back to the non-root user for security before running the application.
 USER nitter
 
-# Use ENTRYPOINT to run the container as an executable, as per Docker best practices.
-ENTRYPOINT ["/src/entrypoint.sh"]
+# Use ENTRYPOINT for a temporary diagnostic command. 
+# This is NOT a fix, but a debugging step to inspect the file system.
+ENTRYPOINT ["ls", "-la", "/src"]
