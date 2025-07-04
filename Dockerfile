@@ -7,6 +7,10 @@ USER root
 # Install stunnel for TLS proxy and redis-tools for health checks
 RUN apk --no-cache add stunnel redis
 
+# Copy Nitter configuration files to the working directory
+COPY nitter.conf /src/nitter.conf
+COPY sessions.jsonl /src/sessions.jsonl
+
 # Copy the custom entrypoint script to a standard binary location
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
