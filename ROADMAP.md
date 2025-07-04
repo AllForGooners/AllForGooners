@@ -11,13 +11,14 @@ This document outlines the current state of the project and the strategic roadma
 *   **Data Processing:** LLM orchestration via OpenRouter
 *   **Database:** Supabase (PostgreSQL)
 *   **Frontend:** Vanilla JavaScript, HTML5, CSS3
-*   **Deployment:** Configured for Vercel-style serverless functions.
+*   **Containerization:** Docker, Docker Compose
+*   **Deployment:** Main application on Vercel (serverless); Services (e.g., Nitter) on Northflank.
 
 #### Component Breakdown
 
 *   **Data Ingestion (`api/newscraper.py`):**
     *   **RSS Feeds (Stable):** Utilizes `feedparser` for reliable data extraction from BBC Sport and Sky Sports. This component is functional and considered production-ready.
-    *   **Twitter/X Scraping (High-Risk/Legacy):** Employs `twikit`, a non-API, reverse-engineering library. This component is considered brittle and is a candidate for deprecation due to its inherent instability.
+    *   **Twitter/X Scraping (New Architecture):** The legacy `twikit` implementation is being replaced by a private, self-hosted Nitter instance running in Docker. This provides a stable, reliable, and isolated service for scraping tweets, removing the dependency on brittle, reverse-engineered libraries.
 
 *   **Orchestration & State Management (`api/scrape.py`):**
     *   The core orchestrator, `api/scrape.py`, runs an `asyncio` event loop, managing the full ETL pipeline.
@@ -61,11 +62,11 @@ This document outlines the current state of the project and the strategic roadma
     2.  **Develop a Centralized Sports API Client (`api/sports_api_client.py`):** Create a single module to handle all interactions with API-Football, Wikimedia, and SportMonks. Its first function will be `get_player_image()`.
     3.  **Implement API-Driven Image Standardization:** After the LLM identifies a player in an article, call the new API client to get a high-quality, professional headshot.
     4.  **Implement Automated Scraper Execution:** Set up a scheduled task to run the scraping script automatically every hour, ensuring the website is always up-to-date with the latest transfer news without manual intervention.
-    5.  **Research and Implement a Stable X/Twitter Scraping Solution:** Investigate and integrate a more robust, reliable, and safer method for scraping tweets from key journalists, replacing the current high-risk `twikit` implementation. This involves:
-        *   **Nitter Instance Setup:** Obtain Nitter source, containerize with Docker, and configure `nitter.conf` for private use.
-        *   **Deployment on Render:** Define Nitter service in `render.yaml` (web service, Docker build, `feature/nitter-scraper` branch) and configure environment variables.
-        *   **Integration with Scraper:** Update existing scraper to use the deployed Nitter instance's URL and implement robust error handling.
-        *   **Testing and Validation:** Verify Nitter functionality, scraper integration, and monitor performance.
+    5.  **Implement a Stable X/Twitter Scraping Solution:** Integrate a robust, reliable, and safer method for scraping tweets from key journalists, replacing the high-risk `twikit` implementation. This involves:
+    *   **[COMPLETED] Local Nitter Instance Setup:** Successfully containerized Nitter and Redis using Docker Compose. Resolved critical configuration issues by creating a custom `entrypoint.sh` script that dynamically corrects the `nitter.conf` file at runtime, ensuring a stable connection to Redis. The local environment is now fully functional and ready for deployment.
+    *   **[COMPLETED] Deployment on Northflank:** Successfully deployed the containerized Nitter application to Northflank. Resolved complex TLS proxy and file permission issues by creating a robust `Dockerfile` and a self-contained `entrypoint.sh` script that generates configurations at runtime, ensuring a stable and secure deployment.
+    *   **[PENDING] Integration with Scraper:** Update the existing scraper to use the deployed Nitter instance's URL and implement robust error handling.
+    *   **[PENDING] Testing and Validation:** Verify the end-to-end functionality of the deployed Nitter instance and its integration with the scraper, and monitor performance.
 
 ## Phase 2: Advanced Features
 
