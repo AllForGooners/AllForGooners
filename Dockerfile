@@ -5,13 +5,14 @@ FROM zedeus/nitter:latest
 # Switch to root to install packages and fix file formats.
 USER root
 
-# Install dependencies. dos2unix is for fixing potential Windows line endings.
-RUN apk add --no-cache netcat-openbsd redis dos2unix
+# Install dependencies. stunnel is the TLS proxy, dos2unix is for fixing line endings.
+RUN apk add --no-cache netcat-openbsd redis dos2unix stunnel
 
 # Copy all application files.
 COPY nitter.conf /src/nitter.conf
 COPY sessions.jsonl /src/sessions.jsonl
 COPY entrypoint.sh /src/entrypoint.sh
+COPY stunnel.conf.template /src/stunnel.conf.template
 
 # Make the script executable and fix line endings in one step.
 # This is the definitive fix based on the diagnostic logs.
