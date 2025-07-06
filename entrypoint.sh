@@ -17,36 +17,55 @@ echo "  Password: $(if [ -n "$REDIS_PASSWORD" ]; then echo "Set"; else echo "Not
 echo "[INFO] Resolving Redis host: $REDIS_HOST"
 getent hosts "$REDIS_HOST" || echo "Failed to resolve host"
 
-echo "[INFO] Configuring Nitter for direct Redis TLS connection..."
+echo "[INFO] Creating a clean nitter.conf file..."
 
-# Set the hostname in nitter.conf
-if [ -n "$HOSTNAME" ]; then
-    echo "Setting hostname to $HOSTNAME"
-    sed -i "s/hostname = \".*\"/hostname = \"$HOSTNAME\"/" /src/nitter.conf
+# Create a completely new nitter.conf file instead of modifying the existing one
+cat > /src/nitter.conf << EOF
+[Server]
+hostname = "p01--nitter-scraper--6vvf2kxrg48m.code.run"
+title = "nitter"
+address = "0.0.0.0"
+port = 8080
+https = false
+httpMaxConnections = 100
+staticDir = "./public"
+sessionSecret = "nitter"
+
+[Cache]
+listMinutes = 240
+rssMinutes = 10
+redisHost = "${REDIS_HOST}"
+redisPort = ${REDIS_PORT}
+redisPassword = "${REDIS_PASSWORD}"
+redisConnections = 20
+redisMaxConnections = 30
+redisUseTLS = true
+
+[Config]
+hmacKey = "nitter"
+base64Media = false
+enableRSS = true
+enableDebug = true
+proxy = ""
+proxyAuth = ""
+tokenCount = 10
+EOF
+
+echo "[INFO] Created new nitter.conf:"
+cat /src/nitter.conf | grep -v "redisPassword"
+
+# Verify sessions.jsonl file
+echo "[INFO] Checking sessions.jsonl file..."
+if [ -f "/src/sessions.jsonl" ]; then
+    # Make sure the file is valid JSON Lines format
+    echo "[INFO] Recreating sessions.jsonl with valid format"
+    echo '{"username":"placeholder","cookies":{"ct0":"placeholder_token","auth_token":"placeholder_auth_token"},"guest":true,"lastUsed":1720000000000}' > /src/sessions.jsonl
+    echo "[INFO] sessions.jsonl content:"
+    cat /src/sessions.jsonl
 else
-    echo "Using default hostname: p01--nitter-scraper--6vvf2kxrg48m.code.run"
-    sed -i "s/hostname = \".*\"/hostname = \"p01--nitter-scraper--6vvf2kxrg48m.code.run\"/" /src/nitter.conf
+    echo "[INFO] Creating sessions.jsonl file"
+    echo '{"username":"placeholder","cookies":{"ct0":"placeholder_token","auth_token":"placeholder_auth_token"},"guest":true,"lastUsed":1720000000000}' > /src/sessions.jsonl
 fi
-
-# Configure direct Redis connection with TLS
-echo "Setting Redis host to $REDIS_HOST"
-sed -i "s/redisHost = \".*\"/redisHost = \"$REDIS_HOST\"/" /src/nitter.conf
-
-echo "Setting Redis port to $REDIS_PORT"
-sed -i "s/redisPort = [0-9]*/redisPort = $REDIS_PORT/" /src/nitter.conf
-
-if [ -n "$REDIS_PASSWORD" ]; then
-    echo "Setting Redis password"
-    sed -i "s/redisPassword = \".*\"/redisPassword = \"$REDIS_PASSWORD\"/" /src/nitter.conf
-fi
-
-# Enable TLS for Redis connection
-echo "Enabling Redis TLS"
-sed -i "s/redisUseTLS = false/redisUseTLS = true/" /src/nitter.conf 2>/dev/null || echo "redisUseTLS = true" >> /src/nitter.conf
-
-# Display the final configuration (without showing the password)
-echo "[INFO] Final Redis configuration in nitter.conf:"
-grep -E "redisHost|redisPort|redisUseTLS" /src/nitter.conf
 
 # Start Nitter
 echo "[INFO] Starting Nitter from /src directory..."
@@ -54,19 +73,7 @@ cd /src
 
 # Check if nitter executable exists and is executable
 if [ -f "./nitter" ] && [ -x "./nitter" ]; then
-    echo "Found Nitter executable at /src/nitter"
-    
-    # Show final configuration
-    echo "[INFO] Final Nitter configuration:"
-    echo "  Working directory: $(pwd)"
-    echo "  Config file: /src/nitter.conf"
-    
-    # Check if sessions file exists
-    if [ -f "./sessions.jsonl" ]; then
-        echo "[sessions] parsing JSONL account sessions file: ./sessions.jsonl"
-    else
-        echo "[WARNING] No sessions.jsonl file found. Nitter will work but with limitations."
-    fi
+    echo "[INFO] Found Nitter executable at /src/nitter"
     
     echo "[INFO] Starting Nitter..."
     exec ./nitter
