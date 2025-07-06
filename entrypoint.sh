@@ -78,9 +78,13 @@ output = /tmp/stunnel/stunnel.log
 client = yes
 accept = 127.0.0.1:6379
 connect = ${REDIS_HOST}:${REDIS_PORT}
-verifyChain = no
-verifyPeer = no
+# Security settings required by newer stunnel versions
+verifyChain = yes
+verifyPeer = yes
+# But make it insecure since we don't have proper certs
 checkHost = no
+CAfile = /etc/ssl/certs/ca-certificates.crt
+insecure = yes  # Allow insecure connections despite verification
 sslVersion = TLSv1.2
 EOF
 
@@ -109,14 +113,11 @@ else
     echo "[WARNING] No stunnel log file found"
 fi
 
-# The rest of the script will connect to the local stunnel proxy
-echo "[INFO] Pointing Nitter to local stunnel proxy at 127.0.0.1:6379"
-REDIS_HOST_VAR="127.0.0.1"
-REDIS_PORT_VAR="6379"
-# The connection to the local proxy does not require a password
-REDIS_PASSWORD_VAR=""
+# Since we're having issues with stunnel, let's try a direct connection approach
+echo "[INFO] Attempting direct Redis connection in nitter.conf..."
 
-echo "[INFO] Configuring Nitter for Northflank deployment..."
+# The rest of the script will connect directly to Redis
+echo "[INFO] Configuring Nitter for direct Redis connection..."
 
 # Set the hostname in nitter.conf
 if [ -n "$HOSTNAME" ]; then
@@ -127,24 +128,21 @@ else
     sed -i "s/hostname = \".*\"/hostname = \"p01--nitter-scraper--6vvf2kxrg48m.code.run\"/" /src/nitter.conf
 fi
 
-echo "Setting Redis host to $REDIS_HOST_VAR"
-sed -i "s/redisHost = \".*\"/redisHost = \"$REDIS_HOST_VAR\"/" /src/nitter.conf
-
-echo "Setting Redis port to $REDIS_PORT_VAR"
-sed -i "s/redisPort = [0-9]*/redisPort = $REDIS_PORT_VAR/" /src/nitter.conf
-
-if [ -n "$REDIS_PASSWORD_VAR" ] && [ "$REDIS_PASSWORD_VAR" != "" ]; then
-    echo "Setting Redis password"
-    sed -i "s/redisPassword = \".*\"/redisPassword = \"$REDIS_PASSWORD_VAR\"/" /src/nitter.conf
-fi
-
-# Try to connect directly to Redis without stunnel
-echo "[INFO] Attempting direct Redis connection in nitter.conf..."
+# Configure direct Redis connection
+echo "Setting Redis host to $REDIS_HOST"
 sed -i "s/redisHost = \".*\"/redisHost = \"$REDIS_HOST\"/" /src/nitter.conf
+
+echo "Setting Redis port to $REDIS_PORT"
 sed -i "s/redisPort = [0-9]*/redisPort = $REDIS_PORT/" /src/nitter.conf
+
 if [ -n "$REDIS_PASSWORD" ]; then
+    echo "Setting Redis password"
     sed -i "s/redisPassword = \".*\"/redisPassword = \"$REDIS_PASSWORD\"/" /src/nitter.conf
 fi
+
+# Try to enable TLS for Redis connection
+echo "Enabling Redis TLS"
+sed -i "s/redisUseTLS = false/redisUseTLS = true/" /src/nitter.conf 2>/dev/null || echo "redisUseTLS = true" >> /src/nitter.conf
 
 # Start Nitter
 echo "[INFO] Starting Nitter from /src directory..."
