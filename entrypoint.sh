@@ -23,13 +23,29 @@ get_env_var() {
 
 echo "[INFO] Securely fetching environment variables..."
 
-# Get Redis configuration for stunnel to connect to the real Redis instance
-# First try the prefixed versions, then Redis add-on native names, then defaults
-export REDIS_HOST=${NF_NITTER_REDIS_HOST:-${REDIS_HOST:-${HOST:-localhost}}}
-export REDIS_PORT=${NF_NITTER_REDIS_PORT:-${REDIS_PORT:-${PORT:-6379}}}
-export REDIS_PASSWORD=${NF_NITTER_REDIS_PASSWORD:-${REDIS_PASSWORD:-${PASSWORD:-}}}
+# Get Redis configuration - use explicit environment variables
+REDIS_HOST=${NF_NITTER_REDIS_HOST:-${REDIS_HOST:-master.nitter-redis--6vvf2kxrg48m.addon.code.run}}
+REDIS_PORT=${NF_NITTER_REDIS_PORT:-${REDIS_PORT:-6379}}
+REDIS_PASSWORD=${NF_NITTER_REDIS_PASSWORD:-${REDIS_PASSWORD:-}}
+
+echo "[INFO] Redis configuration:"
+echo "  Host: $REDIS_HOST"
+echo "  Port: $REDIS_PORT"
+echo "  Password: $(if [ -n "$REDIS_PASSWORD" ]; then echo "Set"; else echo "Not set"; fi)"
 
 echo "[INFO] Starting stunnel for secure Redis connection..."
+
+# Create stunnel configuration on the fly with hardcoded port
+cat << EOF > /etc/stunnel/stunnel.conf
+pid = /var/run/stunnel.pid
+
+[redis-tls]
+client = yes
+accept = 127.0.0.1:6379
+connect = ${REDIS_HOST}:${REDIS_PORT}
+sslVersion = TLSv1.2
+EOF
+
 # Start stunnel in the background
 stunnel /etc/stunnel/stunnel.conf
 
