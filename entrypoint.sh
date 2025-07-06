@@ -35,9 +35,12 @@ echo "  Password: $(if [ -n "$REDIS_PASSWORD" ]; then echo "Set"; else echo "Not
 
 echo "[INFO] Starting stunnel for secure Redis connection..."
 
-# Create stunnel configuration on the fly with hardcoded port
-cat << EOF > /etc/stunnel/stunnel.conf
-pid = /var/run/stunnel.pid
+# Create a directory where we have write permissions
+mkdir -p /tmp/stunnel
+
+# Create stunnel configuration in /tmp where we have write permissions
+cat << EOF > /tmp/stunnel/stunnel.conf
+pid = /tmp/stunnel/stunnel.pid
 
 [redis-tls]
 client = yes
@@ -46,8 +49,8 @@ connect = ${REDIS_HOST}:${REDIS_PORT}
 sslVersion = TLSv1.2
 EOF
 
-# Start stunnel in the background
-stunnel /etc/stunnel/stunnel.conf
+# Start stunnel with our custom config
+stunnel /tmp/stunnel/stunnel.conf
 
 # The rest of the script will connect to the local stunnel proxy
 echo "[INFO] Pointing Nitter to local stunnel proxy at 127.0.0.1:6379"
@@ -80,8 +83,8 @@ fi
 
 # Enhanced Redis connection testing
 echo "[INFO] Testing Redis connection..."
-MAX_RETRIES=60  # Increased from 30 to 60
-RETRY_INTERVAL=3  # Increased from 2 to 3 seconds
+MAX_RETRIES=60
+RETRY_INTERVAL=3
 RETRIES=0
 
 # Function to test Redis connection
