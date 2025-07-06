@@ -35,7 +35,7 @@ RETRY_INTERVAL=2
 RETRIES=0
 
 while [ $RETRIES -lt $MAX_RETRIES ]; do
-  if redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" ping > /dev/null 2>&1; then
+  if redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" -a "$REDIS_PASSWORD_VAR" ping > /dev/null 2>&1; then
     echo "Redis is ready!"
     break
   else
