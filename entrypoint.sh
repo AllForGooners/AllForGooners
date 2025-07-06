@@ -33,30 +33,87 @@ echo "  Host: $REDIS_HOST"
 echo "  Port: $REDIS_PORT"
 echo "  Password: $(if [ -n "$REDIS_PASSWORD" ]; then echo "Set"; else echo "Not set"; fi)"
 
-echo "[INFO] Starting stunnel for secure Redis connection..."
-
 # Create a directory where we have write permissions
 mkdir -p /tmp/stunnel
+
+# Try direct Redis connection first to verify connectivity
+echo "[INFO] Testing direct Redis connection..."
+if command -v redis-cli >/dev/null 2>&1; then
+    if [ -n "$REDIS_PASSWORD" ]; then
+        # Try with password
+        REDIS_RESULT=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" ping 2>&1) || echo "Failed"
+    else
+        # Try without password
+        REDIS_RESULT=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" ping 2>&1) || echo "Failed"
+    fi
+    
+    echo "Direct Redis connection test result: $REDIS_RESULT"
+    
+    # Check if TLS is required
+    if echo "$REDIS_RESULT" | grep -q "NOAUTH\|wrong number of arguments\|ERR"; then
+        echo "[INFO] Redis authentication failed, trying with TLS..."
+        if [ -n "$REDIS_PASSWORD" ]; then
+            REDIS_TLS_RESULT=$(redis-cli --tls -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" ping 2>&1) || echo "Failed"
+        else
+            REDIS_TLS_RESULT=$(redis-cli --tls -h "$REDIS_HOST" -p "$REDIS_PORT" ping 2>&1) || echo "Failed"
+        fi
+        echo "Direct Redis TLS connection test result: $REDIS_TLS_RESULT"
+    fi
+else
+    echo "[WARNING] redis-cli not found, skipping direct connection test"
+fi
+
+# Try to resolve the Redis host
+echo "[INFO] Resolving Redis host: $REDIS_HOST"
+getent hosts "$REDIS_HOST" || echo "Failed to resolve host"
 
 # Create stunnel configuration in /tmp where we have write permissions
 cat << EOF > /tmp/stunnel/stunnel.conf
 pid = /tmp/stunnel/stunnel.pid
+foreground = no
+debug = 7
+output = /tmp/stunnel/stunnel.log
 
 [redis-tls]
 client = yes
 accept = 127.0.0.1:6379
 connect = ${REDIS_HOST}:${REDIS_PORT}
+verifyChain = no
+verifyPeer = no
+checkHost = no
 sslVersion = TLSv1.2
 EOF
 
+echo "[INFO] Starting stunnel with config:"
+cat /tmp/stunnel/stunnel.conf
+
 # Start stunnel with our custom config
 stunnel /tmp/stunnel/stunnel.conf
+
+# Give stunnel a moment to start
+sleep 2
+
+# Check if stunnel is running
+echo "[INFO] Checking if stunnel is running:"
+ps aux | grep stunnel || echo "No stunnel process found"
+
+# Check if the local port is listening
+echo "[INFO] Checking if local port is open:"
+netstat -tulpn | grep 6379 || echo "Port 6379 is not open"
+
+# Check stunnel log if it exists
+if [ -f "/tmp/stunnel/stunnel.log" ]; then
+    echo "[INFO] Stunnel log content:"
+    cat /tmp/stunnel/stunnel.log
+else
+    echo "[WARNING] No stunnel log file found"
+fi
 
 # The rest of the script will connect to the local stunnel proxy
 echo "[INFO] Pointing Nitter to local stunnel proxy at 127.0.0.1:6379"
 REDIS_HOST_VAR="127.0.0.1"
 REDIS_PORT_VAR="6379"
-# The connection to the local proxy does not require a password, as stunnel handles authentication.
+# The connection to the local proxy does not require a password
 REDIS_PASSWORD_VAR=""
 
 echo "[INFO] Configuring Nitter for Northflank deployment..."
@@ -81,51 +138,12 @@ if [ -n "$REDIS_PASSWORD_VAR" ] && [ "$REDIS_PASSWORD_VAR" != "" ]; then
     sed -i "s/redisPassword = \".*\"/redisPassword = \"$REDIS_PASSWORD_VAR\"/" /src/nitter.conf
 fi
 
-# Enhanced Redis connection testing
-echo "[INFO] Testing Redis connection..."
-MAX_RETRIES=60
-RETRY_INTERVAL=3
-RETRIES=0
-
-# Function to test Redis connection
-test_redis_connection() {
-    # Test without password, as stunnel handles authentication for the local proxy.
-    redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" ping 2>/dev/null
-}
-
-echo "Waiting for Redis to be ready at $REDIS_HOST_VAR:$REDIS_PORT_VAR..."
-
-while [ $RETRIES -lt $MAX_RETRIES ]; do
-    if test_redis_connection | grep -q "PONG"; then
-        echo "[SUCCESS] Redis is ready!"
-        break
-    else
-        echo "[RETRY $((RETRIES+1))/$MAX_RETRIES] Redis not ready yet, retrying in $RETRY_INTERVAL seconds..."
-        
-        # Show more debug info every 10 retries
-        if [ $((RETRIES % 10)) -eq 0 ] && [ $RETRIES -gt 0 ]; then
-            echo "[DEBUG] Checking if Redis host is reachable..."
-            if command -v nc >/dev/null 2>&1; then
-                nc -z "$REDIS_HOST_VAR" "$REDIS_PORT_VAR" 2>/dev/null && echo "[DEBUG] Port is open" || echo "[DEBUG] Port is not reachable"
-            fi
-            if command -v nslookup >/dev/null 2>&1; then
-                echo "[DEBUG] DNS lookup for $REDIS_HOST_VAR:"
-                nslookup "$REDIS_HOST_VAR" 2>/dev/null | head -5 || echo "[DEBUG] DNS lookup failed"
-            fi
-        fi
-        
-        sleep $RETRY_INTERVAL
-        RETRIES=$((RETRIES+1))
-    fi
-done
-
-if [ $RETRIES -eq $MAX_RETRIES ]; then
-    echo "[ERROR] Redis is not available after $MAX_RETRIES retries."
-    echo "[ERROR] Redis configuration:"
-    echo "  Host: $REDIS_HOST_VAR"
-    echo "  Port: $REDIS_PORT_VAR"
-    echo "  Password: $([ -n "$REDIS_PASSWORD_VAR" ] && echo "Set" || echo "Not set")"
-    echo "[ERROR] Continuing anyway, but Nitter might not work properly."
+# Try to connect directly to Redis without stunnel
+echo "[INFO] Attempting direct Redis connection in nitter.conf..."
+sed -i "s/redisHost = \".*\"/redisHost = \"$REDIS_HOST\"/" /src/nitter.conf
+sed -i "s/redisPort = [0-9]*/redisPort = $REDIS_PORT/" /src/nitter.conf
+if [ -n "$REDIS_PASSWORD" ]; then
+    sed -i "s/redisPassword = \".*\"/redisPassword = \"$REDIS_PASSWORD\"/" /src/nitter.conf
 fi
 
 # Start Nitter
@@ -140,8 +158,8 @@ if [ -f "./nitter" ] && [ -x "./nitter" ]; then
     echo "[INFO] Final Nitter configuration:"
     echo "  Working directory: $(pwd)"
     echo "  Config file: /src/nitter.conf"
-    echo "  Redis host: $REDIS_HOST_VAR"
-    echo "  Redis port: $REDIS_PORT_VAR"
+    echo "  Redis host: $REDIS_HOST"
+    echo "  Redis port: $REDIS_PORT"
     
     # Check if sessions file exists
     if [ -f "./sessions.jsonl" ]; then
@@ -172,9 +190,6 @@ else
     echo "[ERROR] Could not find Nitter executable. Searched common locations."
     echo "[DEBUG] Listing files in /src directory:"
     ls -la /src
-    
-    echo "[DEBUG] Searching for nitter executable in the filesystem..."
-    find / -name "nitter" -type f -executable 2>/dev/null || echo "[DEBUG] No nitter executable found."
     
     exit 1
 fi
