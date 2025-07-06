@@ -10,6 +10,7 @@ RUN apk --no-cache add stunnel redis findutils
 # Copy Nitter configuration files to the working directory
 COPY nitter.conf /src/nitter.conf
 COPY sessions.jsonl /src/sessions.jsonl
+COPY stunnel.conf /etc/stunnel/stunnel.conf
 
 # Copy the custom entrypoint script to a standard binary location
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

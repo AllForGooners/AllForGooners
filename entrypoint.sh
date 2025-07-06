@@ -23,11 +23,22 @@ get_env_var() {
 
 echo "[INFO] Securely fetching environment variables..."
 
-# Get Redis configuration - try multiple variable name patterns
+# Get Redis configuration for stunnel to connect to the real Redis instance
 # First try the prefixed versions, then Redis add-on native names, then defaults
-REDIS_HOST_VAR=${NF_NITTER_REDIS_HOST:-${REDIS_HOST:-${HOST:-localhost}}}
-REDIS_PORT_VAR=${NF_NITTER_REDIS_PORT:-${REDIS_PORT:-${PORT:-6379}}}
-REDIS_PASSWORD_VAR=${NF_NITTER_REDIS_PASSWORD:-${REDIS_PASSWORD:-${PASSWORD:-}}}
+export REDIS_HOST=${NF_NITTER_REDIS_HOST:-${REDIS_HOST:-${HOST:-localhost}}}
+export REDIS_PORT=${NF_NITTER_REDIS_PORT:-${REDIS_PORT:-${PORT:-6379}}}
+export REDIS_PASSWORD=${NF_NITTER_REDIS_PASSWORD:-${REDIS_PASSWORD:-${PASSWORD:-}}}
+
+echo "[INFO] Starting stunnel for secure Redis connection..."
+# Start stunnel in the background
+stunnel /etc/stunnel/stunnel.conf
+
+# The rest of the script will connect to the local stunnel proxy
+echo "[INFO] Pointing Nitter to local stunnel proxy at 127.0.0.1:6379"
+REDIS_HOST_VAR="127.0.0.1"
+REDIS_PORT_VAR="6379"
+# The connection to the local proxy does not require a password, as stunnel handles authentication.
+REDIS_PASSWORD_VAR=""
 
 echo "[INFO] Configuring Nitter for Northflank deployment..."
 
@@ -59,13 +70,8 @@ RETRIES=0
 
 # Function to test Redis connection
 test_redis_connection() {
-    if [ -n "$REDIS_PASSWORD_VAR" ] && [ "$REDIS_PASSWORD_VAR" != "" ]; then
-        # Test with password
-        redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" -a "$REDIS_PASSWORD_VAR" ping 2>/dev/null
-    else
-        # Test without password
-        redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" ping 2>/dev/null
-    fi
+    # Test without password, as stunnel handles authentication for the local proxy.
+    redis-cli -h "$REDIS_HOST_VAR" -p "$REDIS_PORT_VAR" ping 2>/dev/null
 }
 
 echo "Waiting for Redis to be ready at $REDIS_HOST_VAR:$REDIS_PORT_VAR..."
